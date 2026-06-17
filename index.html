@@ -271,6 +271,9 @@
 </div>
 
 <div class="wrap">
+  <div id="snapWarn" style="display:none;background:rgba(217,164,65,.12);border:1px solid rgba(217,164,65,.45);border-left:4px solid var(--gold);border-radius:12px;padding:12px 16px;margin-top:22px;font-size:13.5px;color:#5c4a16;">
+    Exibindo a <b>cópia local de segurança</b>: não foi possível ler os dados ao vivo da planilha agora. Telefones e contatos podem estar desatualizados. Publique a página ou clique em <b>Atualizar</b> para ver a versão ao vivo.
+  </div>
   <div id="lacunas" class="lacunas" style="display:none">
     <h3>Lacunas — categorias para abrir novos fornecedores</h3>
     <ul id="lacunasList"></ul>
@@ -418,20 +421,45 @@ function parseCSV(text){
   if(f!==""||row.length){row.push(f);rows.push(row);}
   return rows;
 }
-function normForn(rows){
-  return rows.map(r=>({
-    cat:(r[0]||"").trim(), nome:(r[1]||"").trim(), contatoRef:(r[2]||"").trim(),
-    contato:(r[3]||"").trim(), cidade:(r[4]||"").trim()||"—",
-    nota:parseInt((r[5]||"").trim(),10)||0, espec:(r[6]||"").trim()
-  })).filter(x=>x.nome && x.nome.toUpperCase()!=="FORNECEDOR");
+/* Lê as colunas pelo NOME do cabeçalho (não pela posição).
+   Assim, acrescentar ou reordenar colunas na planilha não quebra o painel. */
+const norm = s => (s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+  .toLowerCase().replace(/\s+/g," ").trim();
+function headerMap(headerRow){
+  const H=(headerRow||[]).map(norm);
+  const find=pred=>{ for(let i=0;i<H.length;i++){ if(pred(H[i])) return i; } return -1; };
+  return {
+    nome:   find(h=>h==="nome"||h.includes("fornecedor")),
+    cat:    find(h=>h==="tipo"||h.startsWith("func")),
+    ref:    find(h=>h.includes("referencia")),
+    tel:    find(h=>h.includes("telef")||h.includes("fone")||h.includes("celular")||h.includes("whats")),
+    email:  find(h=>h.includes("mail")),
+    contato:find(h=>h.includes("contato")),
+    cidade: find(h=>h.includes("cidade")||h.includes("local")||h==="uf"),
+    nota:   find(h=>h.includes("avalia")||h.includes("confiab")||h.includes("nota")||h.includes("rating")),
+    espec:  find(h=>h.includes("especific")||h.includes("observ")||h.includes("descri")||h==="obs"),
+    proj:   find(h=>h.includes("projeto"))
+  };
 }
-function normEq(rows){
-  return rows.map(r=>({
-    nome:(r[0]||"").trim(), cat:(r[1]||"").trim(),
-    contato:[(r[2]||"").trim(),(r[3]||"").trim()].filter(Boolean).join(" | "),
-    cidade:(r[4]||"").trim()||"—", projetos:(r[5]||"").trim(),
-    nota:parseInt((r[6]||"").trim(),10)||0, espec:(r[7]||"").trim(), contatoRef:""
-  })).filter(x=>x.nome && x.nome.toUpperCase()!=="NOME");
+function normRows(rows){
+  if(!rows||!rows.length) return [];
+  const m=headerMap(rows[0]);
+  if(m.nome<0) return [];
+  const g=(r,i)=> (i>=0 && r[i]!=null) ? String(r[i]).trim() : "";
+  const out=[];
+  for(let k=1;k<rows.length;k++){
+    const r=rows[k]; const nome=g(r,m.nome); if(!nome) continue;
+    const seen=new Set(), uniq=[];
+    [g(r,m.tel),g(r,m.email),g(r,m.contato)].filter(Boolean).forEach(b=>{
+      const key=b.toLowerCase(); if(!seen.has(key)){seen.add(key);uniq.push(b);}
+    });
+    out.push({
+      nome, cat:g(r,m.cat), contatoRef:g(r,m.ref),
+      contato:uniq.join(" | "), cidade:g(r,m.cidade)||"—",
+      projetos:g(r,m.proj), nota:parseInt(g(r,m.nota),10)||0, espec:g(r,m.espec)
+    });
+  }
+  return out;
 }
 
 /* ========================= Estado ========================= */
@@ -606,6 +634,7 @@ function fallbackCopy(txt,done){
 /* ========================= Busca ao vivo ========================= */
 function setStatus(kind,text){
   const b=$("#statusBadge"); b.className="status "+kind; $("#statusText").textContent=text;
+  const sw=document.getElementById("snapWarn"); if(sw) sw.style.display = (kind==="snap") ? "block":"none";
 }
 async function loadLive(){
   setStatus("loading","Buscando dados…");
@@ -615,8 +644,8 @@ async function loadLive(){
       fetch(SOURCES.eq,{cache:"no-store"})
     ]);
     if(!rf.ok||!re.ok) throw new Error("http");
-    const forn=normForn(parseCSV(await rf.text()));
-    const eq=normEq(parseCSV(await re.text()));
+    const forn=normRows(parseCSV(await rf.text()));
+    const eq=normRows(parseCSV(await re.text()));
     if(!forn.length||!eq.length) throw new Error("empty");
     DATA={forn,eq};
     const now=new Date().toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"});
