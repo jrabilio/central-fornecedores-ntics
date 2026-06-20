@@ -1,0 +1,1434 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plano de Vendas Editável — NTICS 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=Archivo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0e1a14;--paper:#eef2ee;--card:#ffffff;
+    --green:#15643f;--green-b:#27966a;--gold:#c08a2d;--rust:#b14430;--slate:#5a6660;
+    --line:#dde4de;--shadow:0 1px 2px rgba(14,26,20,.05),0 9px 26px rgba(14,26,20,.07);
+    --edit-bg:#fffbe9;--edit-border:#e4d375;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Archivo',sans-serif;background:var(--paper);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1180px;margin:0 auto;padding:24px 20px 80px}
+
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:8px}
+  .brand{display:flex;align-items:baseline;gap:14px}
+  .brand .mark{font-family:'Fraunces',serif;font-weight:900;font-size:22px;color:var(--green)}
+  .brand .sub{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--slate);font-weight:700}
+  .actions{display:flex;gap:8px;align-items:center}
+  .savest{font-family:'Archivo',sans-serif;font-size:11px;font-weight:700;letter-spacing:.03em;padding:5px 9px;border-radius:7px;white-space:nowrap;background:#eef2ee;color:var(--slate);transition:all .2s}
+  .savest.ok{background:#e3f1e8;color:#1f7a45}
+  .savest.editing{background:#fff4d6;color:#8a6d1a}
+  .savest.warn{background:#fbe3e3;color:#a33}
+  .btn{background:var(--ink);color:var(--paper);border:none;padding:9px 14px;border-radius:8px;font-family:'Archivo';font-weight:700;font-size:12px;cursor:pointer;letter-spacing:.04em}
+  .btn:hover{background:var(--green)}
+  .btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--ink)}
+
+  .tabs{display:flex;gap:4px;border-bottom:2px solid var(--ink);margin-top:14px;overflow-x:auto}
+  .tab{background:transparent;border:none;padding:11px 18px;font-family:'Archivo';font-weight:700;font-size:13px;cursor:pointer;color:var(--slate);border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap;letter-spacing:.02em}
+  .tab.active{color:var(--ink);border-bottom-color:var(--green)}
+  .tab:hover{color:var(--ink)}
+  .pane{display:none;padding-top:24px}
+  .pane.active{display:block}
+
+  h1{font-family:'Fraunces',serif;font-weight:900;font-size:clamp(28px,4.5vw,46px);line-height:.98;letter-spacing:-.02em;margin-bottom:10px}
+  h1 em{font-style:italic;color:var(--green)}
+  .lede{font-size:15px;color:var(--slate);max-width:720px;margin-bottom:8px}
+
+  .ed{background:var(--edit-bg);border:1px dashed var(--edit-border);padding:2px 6px;border-radius:4px;font-weight:700;cursor:text;display:inline-block;min-width:30px;transition:background .15s}
+  .ed:hover{background:#fff5cf}
+  .ed:focus{outline:2px solid var(--gold);background:#fff}
+
+  .info{background:#fffbe9;border:1px solid var(--edit-border);border-radius:8px;padding:11px 14px;font-size:12.5px;color:#7a6017;margin:14px 0}
+  .info strong{color:#5a4810}
+
+  .sec{display:flex;align-items:baseline;gap:12px;margin:34px 0 16px}
+  .sec .n{font-family:'Fraunces',serif;font-weight:900;font-size:16px;color:#fff;background:var(--green);border-radius:8px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .sec.b .n{background:var(--gold)}.sec.c .n{background:var(--rust)}
+  .sec h2{font-family:'Fraunces',serif;font-weight:600;font-size:22px;letter-spacing:-.01em}
+  .sec .h{font-size:12px;color:var(--slate);margin-left:auto;text-align:right}
+
+  /* BLOCKS (estratégia) */
+  .blocks{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  @media(max-width:820px){.blocks{grid-template-columns:1fr}}
+  .block{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;box-shadow:var(--shadow)}
+  .block.full{grid-column:1/-1}
+  .block .ico{font-family:'Fraunces',serif;font-weight:900;font-size:14px;color:#fff;background:var(--green);width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+  .block.gold .ico{background:var(--gold)}.block.rust .ico{background:var(--rust)}.block.dark .ico{background:var(--ink)}.block.slate .ico{background:var(--slate)}
+  .block h3{font-family:'Fraunces',serif;font-weight:600;font-size:17px;margin-bottom:8px}
+  .block p{font-size:13.5px;color:var(--slate);margin-bottom:8px}
+  .block ul{list-style:none;margin-top:6px}
+  .block li{font-size:13px;padding:5px 0 5px 20px;position:relative;border-bottom:1px solid #f0ece1}
+  .block li:last-child{border-bottom:none}
+  .block li::before{content:"";position:absolute;left:2px;top:11px;width:6px;height:6px;border-radius:2px;background:var(--green);transform:rotate(45deg)}
+  .block.gold li::before{background:var(--gold)}.block.rust li::before{background:var(--rust)}
+  .block li strong{font-weight:700;color:var(--ink)}
+
+  blockquote{border-left:4px solid var(--green);background:var(--card);padding:16px 20px;border-radius:0 10px 10px 0;margin:12px 0;box-shadow:var(--shadow)}
+  blockquote p{font-size:14.5px;font-style:italic;font-family:'Fraunces',serif}
+
+  .tagrow{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+  .ftag{background:#e3f1e8;color:var(--green);font-size:12px;font-weight:700;padding:5px 11px;border-radius:18px;border:1px solid #c9e4d3}
+
+  /* PEOPLE (estratégia + resumo) */
+  .people{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:8px}
+  @media(max-width:760px){.people{grid-template-columns:1fr}}
+  .person{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:17px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+  .person::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--green)}
+  .person.gold::before{background:var(--gold)}.person.rust::before{background:var(--rust)}
+  .person .nm{font-weight:800;font-size:15px}
+  .person .rl{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--slate);font-weight:700;margin-bottom:11px}
+  .person .mt{font-family:'Fraunces',serif;font-weight:900;font-size:26px}
+  .person .ml{font-size:11.5px;color:var(--slate)}
+  .person .br{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);font-size:12px}
+  .person .br div{display:flex;justify-content:space-between;padding:2px 0}
+
+  /* COMPOSICAO */
+  .compo{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px;box-shadow:var(--shadow)}
+  .crow{display:flex;align-items:center;gap:12px;margin-bottom:9px}
+  .clabel{flex:0 0 210px;font-size:13px;font-weight:600}
+  .clabel span{display:block;font-size:11px;color:var(--slate);font-weight:400}
+  @media(max-width:680px){.clabel{flex:0 0 140px}}
+  .cbarwrap{flex:1;background:#ece7da;border-radius:6px;height:26px;overflow:hidden;position:relative}
+  .cbar{height:100%;border-radius:6px;display:flex;align-items:center;justify-content:flex-end;padding-right:9px;color:#fff;font-size:11.5px;font-weight:700;transition:width .35s}
+  .ctot{margin-top:14px;padding-top:14px;border-top:2px solid var(--ink);display:flex;justify-content:space-between;font-weight:800;font-size:15px}
+  .ctot .big{font-family:'Fraunces',serif;color:var(--green)}
+
+  /* STATS */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0}
+  @media(max-width:740px){.stats{grid-template-columns:repeat(2,1fr)}}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:15px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+  .stat::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--green)}
+  .stat.gold::before{background:var(--gold)}.stat.rust::before{background:var(--rust)}.stat.slate::before{background:var(--slate)}
+  .stat.real::before{background:#1f7a45}
+  .stat.real{background:linear-gradient(180deg,#f0f7f2 0,#fff 80%)}
+  .stat.real .v{color:#1f7a45}
+  .stat .l{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--slate);font-weight:700}
+  .stat .v{font-family:'Fraunces',serif;font-weight:900;font-size:25px;margin-top:4px;line-height:1.05}
+  .stat .f{font-size:11px;color:var(--slate);margin-top:2px}
+
+  .gap-block{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:18px;box-shadow:var(--shadow);margin-bottom:8px}
+  .gap-block h3{font-family:'Fraunces',serif;font-weight:600;font-size:16px;margin-bottom:6px}
+  .gap-block .sub{font-size:12px;color:var(--slate);margin-bottom:14px}
+  .gap-grid{display:grid;grid-template-columns:repeat(3,1fr) auto;gap:11px;align-items:center}
+  @media(max-width:740px){.gap-grid{grid-template-columns:1fr 1fr}}
+  .gap-cell{background:#f6f9f6;border-radius:9px;padding:12px}
+  .gap-cell .lab{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--slate);font-weight:700}
+  .gap-cell .val{font-family:'Fraunces',serif;font-weight:900;font-size:20px;margin-top:3px;color:var(--green)}
+  .gap-cell .pct{font-size:10.5px;color:var(--slate);margin-top:1px}
+  .gap-cell.total{background:var(--ink);color:#fff}
+  .gap-cell.total .lab{color:rgba(255,255,255,.7)}
+  .gap-cell.total .val{color:#fff}
+  .gap-cell.total .pct{color:rgba(255,255,255,.7)}
+
+  .tier{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:var(--shadow);margin-bottom:12px}
+  .tier .th{padding:12px 16px;font-weight:800;font-size:12.5px;text-transform:uppercase;letter-spacing:.04em;color:#fff;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+  .th.a{background:var(--green)}.th.b{background:var(--gold)}.th.c{background:var(--rust)}
+  .th .sum{font-size:11.5px;font-weight:700;opacity:.95;display:flex;gap:14px;flex-wrap:wrap}
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th.h,td{padding:8px 14px;text-align:left;border-bottom:1px solid #f0ece1}
+  th.h{font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--slate);font-weight:700;background:#faf7ef}
+  td.r{text-align:right;font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
+  td.r.up{color:var(--green);font-weight:800}
+  tr:last-child td{border-bottom:none}
+  .nm{font-weight:700}.pr{font-size:11px;color:var(--slate)}
+  .badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:11px;white-space:nowrap}
+  .badge.cli{background:#e3f1e8;color:var(--green)}
+  .badge.pro{background:#eef0f4;color:#4a5568}
+  .badge.rec{background:#f6e6e1;color:var(--rust)}
+  .badge.lab{background:#0e1a14;color:#fff}
+  .tdest{background:var(--edit-bg)}
+  .tdest td.nm::after{content:" ⚡";color:var(--gold)}
+  .add-row{padding:8px 16px;font-size:12px;color:var(--green);cursor:pointer;font-weight:700;border-top:1px dashed var(--line)}
+  .add-row:hover{background:#f9f7ee}
+  .del{color:#aaa;cursor:pointer;font-size:14px;padding:2px 6px;border-radius:4px;border:none;background:transparent}
+  .del:hover{color:var(--rust);background:#fbeae6}
+
+  .obs{background:linear-gradient(135deg,#fbf2da,#fef7e0);border:1px solid #e7d28a;border-radius:13px;padding:16px 20px;margin:14px 0}
+  .obs h3{font-family:'Fraunces',serif;font-weight:600;font-size:15px;color:#7a6017;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+  .obs h3::before{content:"⚡";font-size:16px}
+  .obs ul{list-style:none}
+  .obs li{padding:5px 0 5px 16px;position:relative;font-size:13px;color:#5a4810;border-bottom:1px dashed #e7d28a}
+  .obs li:last-child{border-bottom:none}
+  .obs li::before{content:"▸";position:absolute;left:0;color:var(--gold);font-weight:800}
+  .obs li strong{color:var(--ink)}
+
+  .props{background:linear-gradient(135deg,#0e1a14,#1c2d20);color:var(--paper);border-radius:13px;padding:20px;margin:6px 0}
+  .props h3{font-family:'Fraunces',serif;font-weight:600;font-size:17px;margin-bottom:5px}
+  .props .sub{font-size:12px;color:rgba(238,242,238,.75);margin-bottom:14px}
+  .plist{list-style:none}
+  .plist li{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.08);font-size:13px;gap:10px}
+  .plist li:last-child{border-bottom:none}
+  .plist .pnum{font-family:'Fraunces',serif;font-weight:900;color:var(--gold);min-width:26px;font-size:14.5px}
+  .plist .pname{flex:1;font-weight:700}
+  .plist .pmeta{font-size:10.5px;color:rgba(238,242,238,.65);font-weight:400;display:block;margin-top:2px}
+  .plist .ptag{font-size:10px;font-weight:700;padding:3px 9px;border-radius:11px;letter-spacing:.04em;white-space:nowrap}
+  .plist .ptag.a{background:rgba(39,150,106,.25);color:#aee5c8}
+  .plist .ptag.b{background:rgba(192,138,45,.28);color:#f0d99b}
+  .plist .ptag.c{background:rgba(177,68,48,.3);color:#f7c5b7}
+
+  .month{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:20px;box-shadow:var(--shadow)}
+  .month h3{font-family:'Fraunces',serif;font-weight:600;font-size:17px;margin-bottom:5px}
+  .month .ms{font-size:12.5px;color:var(--slate);margin-bottom:16px}
+  .mgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  @media(max-width:740px){.mgrid{grid-template-columns:1fr 1fr}}
+  .mc{background:#f6f9f6;border-radius:9px;padding:13px}
+  .mc .mw{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--green);font-weight:700;margin-bottom:7px}
+  .mc ul{list-style:none;font-size:12.5px}
+  .mc li{padding:3px 0 3px 13px;position:relative;color:var(--ink)}
+  .mc li::before{content:"›";position:absolute;left:0;color:var(--gold)}
+
+  .prog{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:18px 20px;box-shadow:var(--shadow);margin-bottom:8px}
+  .prog .pt{font-size:13px;font-weight:700;margin-bottom:10px;display:flex;justify-content:space-between}
+  .track{height:28px;background:#ece7da;border-radius:7px;overflow:hidden;position:relative}
+  .fill{height:100%;background:linear-gradient(90deg,var(--green),var(--green-b));border-radius:7px;display:flex;align-items:center;padding-left:10px;color:#fff;font-size:11.5px;font-weight:700;transition:width .35s}
+
+  /* Colunas Status / Mês / Score (reunião de sprint) */
+  .selstatus,.selmes{font-family:'Archivo',sans-serif;font-size:11px;border:1px solid var(--line);border-radius:6px;padding:3px 4px;background:#fff;color:var(--ink);max-width:118px;cursor:pointer}
+  .selstatus:focus,.selmes:focus{outline:2px solid var(--gold);border-color:var(--gold)}
+  td.stt,td.mes{white-space:nowrap}
+  th.sc,td.sc{text-align:center;width:48px}
+  td.score{font-weight:800;font-family:'Fraunces',serif}
+  td.score:empty:before{content:attr(data-placeholder);color:#bbb;font-weight:400}
+
+  /* Vendas Realizadas 2026 */
+  .realstats{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:12px;margin-bottom:14px}
+  .rstat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;box-shadow:var(--shadow);border-top:4px solid var(--slate)}
+  .rstat.total{border-top-color:#1f7a45;background:linear-gradient(180deg,#f0f7f2 0,#fff 70%)}
+  .rstat.ferc{border-top-color:#2f6b48}
+  .rstat.abic{border-top-color:#c8932f}
+  .rstat.lucc{border-top-color:#7a4a2e}
+  .rl{font-family:'Archivo',sans-serif;font-size:10.5px;letter-spacing:.08em;font-weight:800;color:var(--slate);text-transform:uppercase}
+  .rv{font-family:'Fraunces',serif;font-weight:900;font-size:24px;line-height:1.1;margin:4px 0 4px;color:var(--ink)}
+  .rstat.total .rv{font-size:30px;color:#1f7a45}
+  .rf{font-size:11.5px;color:var(--slate)}
+  .rbar{height:6px;background:#eee;border-radius:3px;margin-top:8px;overflow:hidden}
+  .rfill{height:100%;background:linear-gradient(90deg,#1f7a45,#3aa86e)}
+  .graphwrap{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:var(--shadow);margin-bottom:18px}
+  .grtit{font-family:'Archivo',sans-serif;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--slate);text-align:center;margin-bottom:8px;font-weight:700}
+  @media(max-width:820px){.realstats{grid-template-columns:1fr 1fr}.rstat.total{grid-column:1/-1}}
+
+  /* Prospecção por setor */
+  .sectors{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .sector{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:var(--shadow);border-top:4px solid var(--slate)}
+  .sector.min{border-top-color:#8a6d3b}
+  .sector.san{border-top-color:#2e7da6}
+  .sector.ene{border-top-color:#c8932f}
+  .sechd{display:flex;gap:10px;align-items:center;margin-bottom:12px}
+  .seico{font-size:22px}
+  .setit{font-family:'Fraunces',serif;font-weight:800;font-size:17px;line-height:1.1}
+  .sesub{font-size:11px;color:var(--slate);margin-top:2px}
+  .selist{list-style:none;padding:0;margin:0 0 10px}
+  .selist li{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px dashed var(--line);font-size:12.5px}
+  .selist li:last-child{border-bottom:none}
+  .sename{flex:1;font-weight:600}
+  .sebadge{font-size:9px;font-weight:800;padding:2px 6px;border-radius:5px;text-transform:uppercase;letter-spacing:.03em}
+  .sebadge.pro{background:#e7eef5;color:#2e6da4}
+  .sebadge.rec{background:#f6e7e2;color:#a8512f}
+  .seval{font-variant-numeric:tabular-nums;font-weight:700;font-size:11.5px;color:var(--ink)}
+  .seact{font-size:11.5px;color:var(--slate);font-style:italic;border-top:1px solid var(--line);padding-top:9px}
+  @media(max-width:820px){.sectors{grid-template-columns:1fr}}
+
+  /* FUNNEL processo de vendas */
+  .funnel{display:flex;align-items:stretch;gap:6px;flex-wrap:wrap;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:var(--shadow)}
+  .fstep{flex:1;min-width:140px;background:#f6f9f6;border-radius:10px;padding:13px;display:flex;gap:10px;align-items:center}
+  .fstep.done{background:#e3f1e8;border:1px solid #c9e4d3}
+  .fnum{font-family:'Fraunces',serif;font-weight:900;font-size:15px;color:#fff;background:var(--green);width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .fstep.done .fnum{background:var(--green-b)}
+  .fbody{min-width:0}
+  .ftit{font-weight:800;font-size:13px;line-height:1.2}
+  .ftool{font-size:11px;color:var(--slate);margin-top:2px}
+  .farrow{display:flex;align-items:center;color:var(--gold);font-weight:800;font-size:18px}
+  @media(max-width:820px){.farrow{display:none}.fstep{min-width:0;flex:1 1 45%}}
+
+  footer{margin-top:46px;text-align:center;font-size:11.5px;color:var(--slate);border-top:1px solid var(--line);padding-top:18px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="brand">
+      <span class="mark">NTICS</span>
+      <span class="sub">Plano de Vendas Editável · 2026</span>
+    </div>
+    <div class="actions">
+      <span id="saveStatus" class="savest">salvo automaticamente</span>
+      <button class="btn ghost" onclick="resetData()">Restaurar</button>
+      <button class="btn ghost" onclick="exportHTML()">Exportar arquivo</button>
+      <button class="btn" onclick="saveData()">Salvar agora</button>
+    </div>
+  </div>
+
+  <div class="info">💡 <strong>Como usar:</strong> clique em qualquer campo (valores, status, mês, score) para editar — <strong>tudo é salvo automaticamente</strong> no navegador, e o indicador no topo confirma. Para levar a outra máquina ou subir no Drive, use <strong>Exportar arquivo</strong> (baixa um HTML com todas as suas edições embutidas).</div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab(event,'estrategia')">Estratégia</button>
+    <button class="tab" onclick="showTab(event,'fernando')">Plano Fernando</button>
+    <button class="tab" onclick="showTab(event,'abilio')">Plano Abílio</button>
+    <button class="tab" onclick="showTab(event,'lucas')">Plano Lucas</button>
+    <button class="tab" onclick="showTab(event,'resumo')">Resumo</button>
+  </div>
+
+  <!-- ============ ESTRATÉGIA ============ -->
+  <div class="pane active" id="estrategia">
+    <h1>Estratégia de <em>Vendas</em> · Meta R$ <span class="ed" data-key="meta_empresa" data-type="money_m" contenteditable="true">25</span>M</h1>
+    <p class="lede">A régua que orienta cada planejamento mensal. Edite premissas, metas e composição diretamente nos campos amarelos.</p>
+
+
+    <div class="sec"><span class="n">0</span><h2>Vendas Realizadas 2026</h2><span class="h">acumulado do ano · fonte: aba DRE 2026</span></div>
+    <div class="realstats">
+      <div class="rstat total">
+        <div class="rl">TOTAL EMPRESA</div>
+        <div class="rv">R$ <span id="rv_total">3,633,338</span></div>
+        <div class="rf">de R$ 25M · <strong>14.5%</strong> da meta</div>
+        <div class="rbar"><div class="rfill" style="width:14.5%"></div></div>
+      </div>
+      <div class="rstat ferc">
+        <div class="rl">FERNANDO</div>
+        <div class="rv">R$ <span id="rv_f">2,268,338</span></div>
+        <div class="rf">11 contratos · 18.9% da meta</div>
+      </div>
+      <div class="rstat abic">
+        <div class="rl">ABÍLIO</div>
+        <div class="rv">R$ <span id="rv_a">1,365,000</span></div>
+        <div class="rf">2 contratos · 11.4% da meta</div>
+      </div>
+      <div class="rstat lucc">
+        <div class="rl">LUCAS</div>
+        <div class="rv">R$ <span id="rv_l">0</span></div>
+        <div class="rf">0 contratos · estruturando</div>
+      </div>
+    </div>
+    <div class="graphwrap">
+      <div class="grtit">Realizado mensal por AE · linha pontilhada = acumulado vs meta R$25M</div>
+      <svg viewBox="0 0 820 270" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:880px;display:block;margin:0 auto">
+<rect x="0" y="0" width="820" height="270" fill="#fff"/>
+<line x1="70" y1="30.0" x2="780" y2="30.0" stroke="#eee" stroke-width="1"/>
+<text x="62" y="34.0" text-anchor="end" font-family="Archivo" font-size="10" fill="#666">R$1600k</text>
+<line x1="70" y1="78.5" x2="780" y2="78.5" stroke="#eee" stroke-width="1"/>
+<text x="62" y="82.5" text-anchor="end" font-family="Archivo" font-size="10" fill="#666">R$1200k</text>
+<line x1="70" y1="127.0" x2="780" y2="127.0" stroke="#eee" stroke-width="1"/>
+<text x="62" y="131.0" text-anchor="end" font-family="Archivo" font-size="10" fill="#666">R$800k</text>
+<line x1="70" y1="175.5" x2="780" y2="175.5" stroke="#eee" stroke-width="1"/>
+<text x="62" y="179.5" text-anchor="end" font-family="Archivo" font-size="10" fill="#666">R$400k</text>
+<line x1="70" y1="224.0" x2="780" y2="224.0" stroke="#eee" stroke-width="1"/>
+<text x="62" y="228.0" text-anchor="end" font-family="Archivo" font-size="10" fill="#666">R$0k</text>
+<text x="99.6" y="242" text-anchor="middle" font-family="Archivo" font-size="11" fill="#333">Jan</text>
+<text x="158.8" y="242" text-anchor="middle" font-family="Archivo" font-size="11" fill="#333">Fev</text>
+<rect x="199.6" y="60.7" width="36.7" height="163.3" fill="#2f6b48" opacity="0.92"/>
+<rect x="199.6" y="52.8" width="36.7" height="7.9" fill="#c8932f" opacity="0.92"/>
+<text x="217.9" y="242" text-anchor="middle" font-family="Archivo" font-size="11" fill="#333">Mar</text>
+<text x="217.9" y="48.8" text-anchor="middle" font-family="Archivo" font-size="9" fill="#444" font-weight="700">1411k</text>
+<rect x="258.7" y="221.7" width="36.7" height="2.3" fill="#2f6b48" opacity="0.92"/>
+<text x="277.1" y="242" text-anchor="middle" font-family="Archivo" font-size="11" fill="#333">Abr</text>
+<text x="277.1" y="217.7" text-anchor="middle" font-family="Archivo" font-size="9" fill="#444" font-weight="700">19k</text>
+<text x="336.2" y="242" text-anchor="middle" font-family="Archivo" font-size="11" fill="#333">Mai</text>
+<rect x="377.1" y="171.3" width="36.7" height="52.7" fill="#2f6b48" opacity="0.92"/>
+<rect x="377.1" y="123.3" width="36.7" height="48.0" fill="#c8932f" opacity="0.92"/>
+<text x="395.4" y="242" text-anchor="middle" font-family="Archivo" font-size="11" fill="#333">Jun</text>
+<text x="395.4" y="119.3" text-anchor="middle" font-family="Archivo" font-size="9" fill="#444" font-weight="700">830k</text>
+<rect x="436.2" y="203.8" width="36.7" height="20.2" fill="#2f6b48" opacity="0.92"/>
+<rect x="436.2" y="181.9" width="36.7" height="21.9" fill="#c8932f" opacity="0.92"/>
+<text x="454.6" y="242" text-anchor="middle" font-family="Archivo" font-size="11" fill="#333">Jul</text>
+<text x="454.6" y="177.9" text-anchor="middle" font-family="Archivo" font-size="9" fill="#444" font-weight="700">347k</text>
+<rect x="495.4" y="221.5" width="36.7" height="2.5" fill="#2f6b48" opacity="0.92"/>
+<rect x="495.4" y="199.6" width="36.7" height="21.9" fill="#c8932f" opacity="0.92"/>
+<text x="513.8" y="242" text-anchor="middle" font-family="Archivo" font-size="11" fill="#333">Ago</text>
+<text x="513.8" y="195.6" text-anchor="middle" font-family="Archivo" font-size="9" fill="#444" font-weight="700">201k</text>
+<rect x="554.6" y="219.1" width="36.7" height="4.9" fill="#2f6b48" opacity="0.92"/>
+<rect x="554.6" y="197.1" width="36.7" height="21.9" fill="#c8932f" opacity="0.92"/>
+<text x="572.9" y="242" text-anchor="middle" font-family="Archivo" font-size="11" fill="#333">Set</text>
+<text x="572.9" y="193.1" text-anchor="middle" font-family="Archivo" font-size="9" fill="#444" font-weight="700">221k</text>
+<rect x="613.7" y="217.8" width="36.7" height="6.2" fill="#2f6b48" opacity="0.92"/>
+<rect x="613.7" y="195.9" width="36.7" height="21.9" fill="#c8932f" opacity="0.92"/>
+<text x="632.1" y="242" text-anchor="middle" font-family="Archivo" font-size="11" fill="#333">Out</text>
+<text x="632.1" y="191.9" text-anchor="middle" font-family="Archivo" font-size="9" fill="#444" font-weight="700">231k</text>
+<rect x="672.9" y="221.5" width="36.7" height="2.5" fill="#2f6b48" opacity="0.92"/>
+<rect x="672.9" y="199.6" width="36.7" height="21.9" fill="#c8932f" opacity="0.92"/>
+<text x="691.2" y="242" text-anchor="middle" font-family="Archivo" font-size="11" fill="#333">Nov</text>
+<text x="691.2" y="195.6" text-anchor="middle" font-family="Archivo" font-size="9" fill="#444" font-weight="700">201k</text>
+<rect x="732.1" y="184.8" width="36.7" height="39.2" fill="#2f6b48" opacity="0.92"/>
+<text x="750.4" y="242" text-anchor="middle" font-family="Archivo" font-size="11" fill="#333">Dez</text>
+<text x="750.4" y="180.8" text-anchor="middle" font-family="Archivo" font-size="9" fill="#444" font-weight="700">323k</text>
+<polyline points="99.6,224.0 158.8,224.0 217.9,213.0 277.1,212.9 336.2,212.9 395.4,206.4 454.6,203.8 513.8,202.2 572.9,200.5 632.1,198.7 691.2,197.1 750.4,194.6" fill="none" stroke="#1f7a45" stroke-width="2.2" stroke-dasharray="4,3"/>
+<circle cx="217.9" cy="213.0" r="3" fill="#1f7a45"/>
+<circle cx="277.1" cy="212.9" r="3" fill="#1f7a45"/>
+<circle cx="336.2" cy="212.9" r="3" fill="#1f7a45"/>
+<circle cx="395.4" cy="206.4" r="3" fill="#1f7a45"/>
+<circle cx="454.6" cy="203.8" r="3" fill="#1f7a45"/>
+<circle cx="513.8" cy="202.2" r="3" fill="#1f7a45"/>
+<circle cx="572.9" cy="200.5" r="3" fill="#1f7a45"/>
+<circle cx="632.1" cy="198.7" r="3" fill="#1f7a45"/>
+<circle cx="691.2" cy="197.1" r="3" fill="#1f7a45"/>
+<circle cx="750.4" cy="194.6" r="3" fill="#1f7a45"/>
+<line x1="70" y1="30.0" x2="780" y2="30.0" stroke="#a33" stroke-width="1" stroke-dasharray="2,3"/>
+<text x="774" y="26.0" text-anchor="end" font-family="Archivo" font-size="10" fill="#a33" font-weight="700">META R$ 25M</text>
+<line x1="70" y1="224" x2="780" y2="224" stroke="#333" stroke-width="1"/>
+<rect x="80" y="32" width="11" height="11" fill="#2f6b48"/>
+<text x="96" y="42" font-family="Archivo" font-size="11" fill="#333">Fernando</text>
+<rect x="160" y="32" width="11" height="11" fill="#c8932f"/>
+<text x="176" y="42" font-family="Archivo" font-size="11" fill="#333">Abílio</text>
+<rect x="240" y="32" width="11" height="11" fill="#7a4a2e"/>
+<text x="256" y="42" font-family="Archivo" font-size="11" fill="#333">Lucas</text>
+<line x1="320" y1="37" x2="331" y2="37" stroke="#1f7a45" stroke-width="2.2" stroke-dasharray="3,2"/>
+<text x="336" y="42" font-family="Archivo" font-size="11" fill="#333">Acumulado</text>
+</svg>
+    </div>
+
+    <div class="sec"><span class="n">1</span><h2>Premissas</h2><span class="h">o desenho de tudo</span></div>
+    <div class="blocks">
+      <div class="block"><div class="ico">⚙</div><h3>Natureza da meta</h3><p contenteditable="true" class="ed" data-key="prem_meta">Aporte recebido no ano. Modelo lei de incentivo: aporte ≈ captação anual.</p></div>
+      <div class="block gold"><div class="ico">↗</div><h3>Motor de crescimento</h3>
+        <ul>
+          <li contenteditable="true">Renovação + expansão da base de clientes e base de recuperação</li>
+          <li contenteditable="true"><strong>Decisores que mudaram de empresa</strong> — maior ROI da empresa</li>
+          <li contenteditable="true"><strong>Ecossistema GEMTE</strong> — Lucas no MT, parceria Saberes Essenciais</li>
+          <li contenteditable="true"><strong>Estudo + Briefing</strong> com apoio do Claude</li>
+        </ul>
+      </div>
+      <div class="block"><div class="ico">👥</div><h3>Time comercial</h3>
+        <ul>
+          <li contenteditable="true">Fernando (Clark)</li>
+          <li contenteditable="true">Abílio</li>
+          <li contenteditable="true">Lucas</li>
+        </ul>
+      </div>
+      <div class="block dark"><div class="ico">◎</div><h3>Filosofia de portfólio</h3><p contenteditable="true" class="ed" data-key="prem_port">Poucos projetos âncora, replicados em muitas cidades.</p></div>
+    </div>
+
+    <div class="sec"><span class="n">2</span><h2>Posicionamento</h2></div>
+    <blockquote><p contenteditable="true" class="ed" data-key="posicio">"A Ntics transforma a obrigação fiscal e a agenda ESG das empresas em projetos culturais e socioeducacionais de impacto real, viabilizados via leis de incentivo — entregando indicadores, reputação e legado para a comunidade."</p></blockquote>
+
+    <div class="sec"><span class="n">3</span><h2>Regra de portfólio</h2><span class="h">linhas âncora + ticket</span></div>
+    <div class="blocks">
+      <div class="block dark">
+        <div class="ico">◎</div><h3>Linhas âncora</h3>
+        <p>Poucos projetos que escalam em muitas cidades:</p>
+        <div class="tagrow">
+          <span class="ftag" contenteditable="true">PIE | PEC</span>
+          <span class="ftag" contenteditable="true">Negócio Cultural</span>
+          <span class="ftag" contenteditable="true">Programa Território</span>
+          <span class="ftag" contenteditable="true">Saberes Essenciais</span>
+          <span class="ftag" contenteditable="true">Exposições MT</span>
+          <span class="ftag" contenteditable="true">Educação Financeira</span>
+        </div>
+        <p style="font-size:12px;margin-top:10px" contenteditable="true">Programa Território = mix de culinária <em>ou</em> programa de formação em empreendedorismo + programa de formação de alunos (Legado).</p>
+      </div>
+      <div class="block">
+        <div class="ico">⌗</div><h3>Regra de ticket</h3>
+        <ul>
+          <li contenteditable="true">Clientes <strong>acima de R$ 1M</strong> → projetos <strong>personalizados</strong></li>
+          <li contenteditable="true">Clientes <strong>até R$ 1M</strong> → projetos de <strong>portfólio</strong> nas linhas âncora</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="sec"><span class="n">4</span><h2>Régua de faixas (A · B · C)</h2><span class="h">aplicada em cada plano individual</span></div>
+    <div class="blocks">
+      <div class="block"><div class="ico">A</div><h3>Faixa A · Clientes</h3><p>Clientes ativos com previsão ≥ R$ 500k. Meta R$ 8M por AE. Objetivo: fazê-los gastar <strong>20% a mais</strong>.</p></div>
+      <div class="block gold"><div class="ico">B</div><h3>Faixa B · Prospects</h3><p>Prospects com previsão ≥ R$ 500k. Meta R$ 4M por AE. GAP calculado a <strong>50% de conversão</strong>.</p></div>
+      <div class="block rust"><div class="ico">C</div><h3>Faixa C · Recuperação</h3><p>Contas em recuperação (já compraram). <strong>Extra meta</strong> de R$ 3M por AE. GAP a 50% de conversão.</p></div>
+    </div>
+
+    <div class="sec"><span class="n">5</span><h2>Processo de vendas</h2><span class="h">funil padrão · do estudo ao fechamento</span></div>
+    <div class="funnel">
+      <div class="fstep">
+        <div class="fnum">1</div>
+        <div class="fbody"><div class="ftit" contenteditable="true">Estudo + Briefing</div><div class="ftool" contenteditable="true">Claude</div></div>
+      </div>
+      <div class="farrow">→</div>
+      <div class="fstep">
+        <div class="fnum">2</div>
+        <div class="fbody"><div class="ftit" contenteditable="true">1º Contato</div><div class="ftool" contenteditable="true">LinkedIn / E-mail</div></div>
+      </div>
+      <div class="farrow">→</div>
+      <div class="fstep">
+        <div class="fnum">3</div>
+        <div class="fbody"><div class="ftit" contenteditable="true">Reunião Consultiva</div><div class="ftool" contenteditable="true">Roteiro fixo</div></div>
+      </div>
+      <div class="farrow">→</div>
+      <div class="fstep">
+        <div class="fnum">4</div>
+        <div class="fbody"><div class="ftit" contenteditable="true">Proposta Espelho</div><div class="ftool" contenteditable="true">Claude + template</div></div>
+      </div>
+      <div class="farrow">→</div>
+      <div class="fstep">
+        <div class="fnum">5</div>
+        <div class="fbody"><div class="ftit" contenteditable="true">Cadência 5 Toques</div><div class="ftool" contenteditable="true">Valor, não cobrança</div></div>
+      </div>
+      <div class="farrow">→</div>
+      <div class="fstep done">
+        <div class="fnum">✓</div>
+        <div class="fbody"><div class="ftit" contenteditable="true">Fechamento</div><div class="ftool" contenteditable="true">ClickUp</div></div>
+      </div>
+    </div>
+
+    <div class="sec"><span class="n">6</span><h2>Metas por pessoa</h2><span class="h">edite os valores</span></div>
+    <div class="people">
+      <div class="person">
+        <div class="nm">Fernando (Clark)</div><div class="rl">AE · base + recuperação</div>
+        <div class="mt">R$ <span class="ed" data-key="meta_fernando" data-type="money_m" contenteditable="true">12</span>M</div>
+        <div class="ml" id="ritmo_fernando">~R$ 1,71M / mês (jun–dez)</div>
+        <div class="br"><div><span>Foco</span><strong>recuperação + agro</strong></div><div><span>Linhas</span><strong>Robótica / ODS / Território</strong></div></div>
+      </div>
+      <div class="person gold">
+        <div class="nm">Abílio</div><div class="rl">AE · clientes &gt; R$1M</div>
+        <div class="mt">R$ <span class="ed" data-key="meta_abilio" data-type="money_m" contenteditable="true">12</span>M</div>
+        <div class="ml" id="ritmo_abilio">~R$ 1,71M / mês (jun–dez)</div>
+        <div class="br"><div><span>Foco</span><strong>personalizados &gt;1M</strong></div><div><span>Grandes</span><strong>Bom Futuro</strong></div></div>
+      </div>
+      <div class="person rust">
+        <div class="nm">Lucas</div><div class="rl">AE · entra junho · novo</div>
+        <div class="mt">R$ <span id="meta_lucas_total">7,5</span>M</div>
+        <div class="ml" id="ritmo_lucas">~R$ 1,07M / mês (jun–dez)</div>
+        <div class="br">
+          <div><span>Exposição</span><strong>R$ <span class="ed" data-key="meta_lucas_expo" data-type="money_m" contenteditable="true">5</span>M</strong></div>
+          <div><span>Educação / Saberes</span><strong>R$ <span class="ed" data-key="meta_lucas_edu" data-type="money_m" contenteditable="true">2,5</span>M</strong></div>
+        </div>
+      </div>
+    </div>
+    <p style="font-size:12px;color:var(--slate);margin-top:10px"><strong>Soma individual:</strong> R$ <span id="soma_individual">31,5</span>M · <strong>Meta empresa:</strong> R$ <span id="meta_empresa_ref">25</span>M · <strong>Overcommit:</strong> <span id="overcommit">26</span>%</p>
+
+    <div class="sec"><span class="n">7</span><h2>Composição da meta</h2><span class="h">de onde sai cada real</span></div>
+    <div class="compo">
+      <div class="crow"><div class="clabel">Exposição<span>Lucas · produto novo</span></div><div class="cbarwrap"><div class="cbar" data-comp="5"></div></div></div>
+      <div class="crow"><div class="clabel">Clientes &gt; R$1M<span>projetos personalizados</span></div><div class="cbarwrap"><div class="cbar" data-comp="6"></div></div></div>
+      <div class="crow"><div class="clabel">Base recuperação<span>5 projetos âncora &gt;1M</span></div><div class="cbarwrap"><div class="cbar" data-comp="5"></div></div></div>
+      <div class="crow"><div class="clabel">Clientes ≤ R$1M<span>portfólio PIE/Robótica/ODS</span></div><div class="cbarwrap"><div class="cbar" data-comp="4.5"></div></div></div>
+      <div class="crow"><div class="clabel">Saberes Essenciais<span>Lucas · educação</span></div><div class="cbarwrap"><div class="cbar" data-comp="2.5"></div></div></div>
+      <div class="crow"><div class="clabel">Grandes em destrave<span>Bom Futuro</span></div><div class="cbarwrap"><div class="cbar" data-comp="2"></div></div></div>
+      <div class="ctot"><span>Total da composição</span><span class="big">R$ <span id="compo_total">25</span>M</span></div>
+    </div>
+
+    <div class="sec"><span class="n">8</span><h2>Disciplina &amp; processo</h2></div>
+    <div class="blocks">
+      <div class="block slate"><div class="ico">✓</div><h3>Contratos &amp; assinatura</h3><ul><li contenteditable="true">Contrato sem assinatura = projeto não acontece</li><li contenteditable="true">Fluxo corrigido e monitorado (Luiz)</li><li contenteditable="true">Checklist antes da virada</li></ul></div>
+      <div class="block slate"><div class="ico">↻</div><h3>CRM &amp; memória</h3><ul><li contenteditable="true">Proposta, reunião e FUP no mesmo dia</li><li contenteditable="true">Nota de oportunidade em cada entrada</li><li contenteditable="true">Fechamento mensal vira insumo do próximo</li></ul></div>
+      <div class="block slate full"><div class="ico">⇄</div><h3>Comunicação cliente ↔ produção</h3><ul><li contenteditable="true">Canal único e padronizado (gatilho dos casos Repsol/Statkraft)</li><li contenteditable="true">Atenção permanente aos comunicados internos</li></ul></div>
+    </div>
+  </div>
+
+  <!-- ============ FERNANDO ============ -->
+  <div class="pane" id="fernando">
+    <h1>Plano <em>Fernando</em> (Clark)</h1>
+    <p class="lede">Meta individual <strong>R$ <span id="ref_meta_f">12</span>M</strong> · base + recuperação · Faixa A: clientes ≥R$500k (alvo +20%) · Faixa B: prospects ≥R$500k · Faixa C: recuperação extra meta.</p>
+
+    <div class="stats">
+      <div class="stat real"><div class="l">Realizado 2026</div><div class="v">R$ <span id="rv_f_stat">2.268.338</span></div><div class="f">11 contratos · 18,9% da meta R$12M</div></div>
+      <div class="stat"><div class="l">Pipeline bruto</div><div class="v">R$ <span id="f_bruto">0</span></div><div class="f"><span id="f_count">0</span> oportunidades</div></div>
+      <div class="stat gold"><div class="l">Faixa A · com +20%</div><div class="v">R$ <span id="f_a20">0</span></div><div class="f">previsão: R$ <span id="f_a_atual">0</span></div></div>
+      <div class="stat slate"><div class="l">Faixa B · pipeline</div><div class="v">R$ <span id="f_b_tot">0</span></div><div class="f">a 50%: R$ <span id="f_b_50">0</span></div></div>
+      <div class="stat rust"><div class="l">Faixa C · pipeline</div><div class="v">R$ <span id="f_c_tot">0</span></div><div class="f">a 50%: R$ <span id="f_c_50">0</span></div></div>
+    </div>
+
+    <div class="gap-block">
+      <h3>GAP para a meta de R$ <span id="f_meta_ref">12</span>M</h3>
+      <div class="sub">Cenário: Faixa A com +20% (upsell) + Faixa B e C convertendo 50%</div>
+      <div class="gap-grid">
+        <div class="gap-cell"><div class="lab">Faixa A · +20% clientes</div><div class="val">R$ <span id="f_real_a">0</span></div><div class="pct">100% do upsell</div></div>
+        <div class="gap-cell"><div class="lab">Faixa B · 50% prospect</div><div class="val">R$ <span id="f_real_b">0</span></div><div class="pct">conversão realista</div></div>
+        <div class="gap-cell"><div class="lab">Faixa C · 50% recup.</div><div class="val">R$ <span id="f_real_c">0</span></div><div class="pct">extra meta</div></div>
+        <div class="gap-cell total"><div class="lab">Total realista</div><div class="val">R$ <span id="f_real_tot">0</span></div><div class="pct"><span id="f_gap_msg">—</span></div></div>
+      </div>
+    </div>
+
+    <div class="obs">
+      <h3>Observações Fernando — propostas na mesa</h3>
+      <ul>
+        <li contenteditable="true"><strong>Ferroport:</strong> proposta de <strong>R$ 900.000</strong> aguardando fechamento — entra em Faixa C (Recuperação)</li>
+        <li contenteditable="true"><strong>CNH:</strong> proposta <strong>extra de R$ 600.000</strong> (verba direta) além do contrato CNH principal — linha separada na Faixa A</li>
+      </ul>
+    </div>
+
+    <div class="sec"><span class="n">A</span><h2>Faixa A · Clientes</h2><span class="h">meta R$ 8M · clientes ≥ R$500k · alvo: +20%</span></div>
+    <div class="tier">
+      <div class="th a">
+        <span>Clientes ativos com previsão ≥ R$ 500k</span>
+        <span class="sum">
+          <span>Previsão: <b>R$ <span id="f_th_a">0</span></b></span>
+          <span>+20%: <b>R$ <span id="f_th_a20">0</span></b></span>
+        </span>
+      </div>
+      <table>
+        <thead><tr><th class="h">Empresa</th><th class="h">Produto</th><th class="h">Tipo</th><th class="h">Previsão</th><th class="h">+20% (onde chegar)</th><th class="h">Status</th><th class="h">Mês</th><th class="h sc">Score</th><th class="h"></th></tr></thead>
+        <tbody data-ae="f_a">
+          <tr><td contenteditable="true" class="nm">VIBRA ENERGIA</td><td contenteditable="true" class="pr">Caminhão Conhecendo os ODS</td><td><span class="badge cli">Cliente</span></td><td contenteditable="true" class="r val">2400000</td><td class="r up plus20"></td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">CNH</td><td contenteditable="true" class="pr">Agro Futuro Cultural nas Escolas</td><td><span class="badge cli">Cliente</span></td><td contenteditable="true" class="r val">2000000</td><td class="r up plus20"></td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr class="tdest"><td contenteditable="true" class="nm">CNH Verba Direta</td><td contenteditable="true" class="pr">Agro Futuro Cultural nas Escolas (extra)</td><td><span class="badge cli">Cliente</span></td><td contenteditable="true" class="r val">600000</td><td class="r up plus20"></td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Repsol</td><td contenteditable="true" class="pr">Caminhão Conhecendo os ODS</td><td><span class="badge lab">Lab</span></td><td contenteditable="true" class="r val">2000000</td><td class="r up plus20"></td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">HYPOPHARMA</td><td contenteditable="true" class="pr">PEC</td><td><span class="badge cli">Cliente</span></td><td contenteditable="true" class="r val">600000</td><td class="r up plus20"></td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Statkraft</td><td contenteditable="true" class="pr">Neg. Cultural / CODS</td><td><span class="badge cli">Cliente</span></td><td contenteditable="true" class="r val">600000</td><td class="r up plus20"></td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option selected>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option selected>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Porto de Itapoá</td><td contenteditable="true" class="pr">Negócio Cultural</td><td><span class="badge cli">Cliente</span></td><td contenteditable="true" class="r val">550000</td><td class="r up plus20"></td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option selected>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option selected>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">BTG Pactual / Mobiauto</td><td contenteditable="true" class="pr">Robótica nas escolas</td><td><span class="badge cli">Cliente</span></td><td contenteditable="true" class="r val">500000</td><td class="r up plus20"></td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">SOTREQ</td><td contenteditable="true" class="pr">PIE</td><td><span class="badge cli">Cliente</span></td><td contenteditable="true" class="r val">500000</td><td class="r up plus20"></td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Wilson &amp; Sons</td><td contenteditable="true" class="pr">CODS escolas / PEC</td><td><span class="badge cli">Cliente</span></td><td contenteditable="true" class="r val">500000</td><td class="r up plus20"></td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option selected>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+        </tbody>
+      </table>
+      <div class="add-row" onclick="addRow('f_a','cli',true)">+ adicionar cliente</div>
+    </div>
+
+    <div class="sec b"><span class="n">B</span><h2>Faixa B · Prospects</h2><span class="h">meta R$ 4M · prospects ≥ R$500k</span></div>
+    <div class="tier">
+      <div class="th b">
+        <span>Prospects com previsão ≥ R$ 500k</span>
+        <span class="sum"><span>Pipeline: <b>R$ <span id="f_th_b">0</span></b></span><span>A 50%: <b>R$ <span id="f_th_b50">0</span></b></span></span>
+      </div>
+      <table>
+        <thead><tr><th class="h">Empresa</th><th class="h">Produto</th><th class="h">Tipo</th><th class="h">Previsão</th><th class="h">Status</th><th class="h">Mês</th><th class="h sc">Score</th><th class="h"></th></tr></thead>
+        <tbody data-ae="f_b">
+          <tr><td contenteditable="true" class="nm">Petroreconcavo</td><td contenteditable="true" class="pr">Caminhão ODS</td><td><span class="badge pro">Prospect</span></td><td contenteditable="true" class="r val">1000000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option selected>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option selected>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Eneva</td><td contenteditable="true" class="pr">Caminhão Conhecendo os ODS</td><td><span class="badge pro">Prospect</span></td><td contenteditable="true" class="r val">1000000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option selected>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option selected>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Pref. Ouro Branco</td><td contenteditable="true" class="pr">Caminhão Conhecendo ODS</td><td><span class="badge pro">Prospect</span></td><td contenteditable="true" class="r val">0</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option selected>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Boticário</td><td contenteditable="true" class="pr">Negócio Cultural</td><td><span class="badge pro">Prospect</span></td><td contenteditable="true" class="r val">550000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">VIVIX (Cornelio Brennand)</td><td contenteditable="true" class="pr">Caminhão CODS</td><td><span class="badge pro">Prospect</span></td><td contenteditable="true" class="r val">500000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Valid</td><td contenteditable="true" class="pr">Caminhão ODS</td><td><span class="badge pro">Prospect</span></td><td contenteditable="true" class="r val">500000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">UNIALFA</td><td contenteditable="true" class="pr">Caminhão ODS</td><td><span class="badge pro">Prospect</span></td><td contenteditable="true" class="r val">500000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Bosch</td><td contenteditable="true" class="pr">A definir</td><td><span class="badge pro">Prospect</span></td><td contenteditable="true" class="r val">500000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option selected>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">XP Investimentos</td><td contenteditable="true" class="pr">Negócio Cultural / CODS (estratégia bancos)</td><td><span class="badge pro">Prospect</span></td><td contenteditable="true" class="r val">500000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option selected>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+        </tbody>
+      </table>
+      <div class="add-row" onclick="addRow('f_b','pro',false)">+ adicionar prospect</div>
+    </div>
+
+    <div class="sec c"><span class="n">C</span><h2>Faixa C · Recuperação</h2><span class="h">extra meta R$ 3M · ciclo curto (já compraram)</span></div>
+    <div class="tier">
+      <div class="th c">
+        <span>Contas em recuperação + travadas</span>
+        <span class="sum"><span>Pipeline: <b>R$ <span id="f_th_c">0</span></b></span><span>A 50%: <b>R$ <span id="f_th_c50">0</span></b></span></span>
+      </div>
+      <table>
+        <thead><tr><th class="h">Empresa</th><th class="h">Produto</th><th class="h">Tipo</th><th class="h">Previsão</th><th class="h">Status</th><th class="h">Mês</th><th class="h sc">Score</th><th class="h"></th></tr></thead>
+        <tbody data-ae="f_c">
+          <tr class="tdest"><td contenteditable="true" class="nm">Ferroport</td><td contenteditable="true" class="pr">Culinária / Neg Cultural — proposta R$ 900k na mesa</td><td><span class="badge rec">Recup.</span></td><td contenteditable="true" class="r val">900000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Energisa</td><td contenteditable="true" class="pr">Robótica + Caminhão CODS</td><td><span class="badge lab">Lab</span></td><td contenteditable="true" class="r val">800000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Celesc</td><td contenteditable="true" class="pr">Caminhão MHS</td><td><span class="badge rec">Recup.</span></td><td contenteditable="true" class="r val">400000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">BIC</td><td contenteditable="true" class="pr">PIE</td><td><span class="badge rec">Recup.</span></td><td contenteditable="true" class="r val">400000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option selected>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">MRN</td><td contenteditable="true" class="pr">Conhecendo os ODS</td><td><span class="badge rec">Recup.</span></td><td contenteditable="true" class="r val">350000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Sicredi</td><td contenteditable="true" class="pr">Conhecendo os ODS</td><td><span class="badge rec">Recup.</span></td><td contenteditable="true" class="r val">350000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Caterpillar (Robótica)</td><td contenteditable="true" class="pr">Robótica nas escolas</td><td><span class="badge rec">Recup.</span></td><td contenteditable="true" class="r val">350000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Paranaiba Trans</td><td contenteditable="true" class="pr">Conhecendo os ODS</td><td><span class="badge rec">Recup.</span></td><td contenteditable="true" class="r val">350000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Caterpillar (CODS)</td><td contenteditable="true" class="pr">Conhecendo os ODS</td><td><span class="badge rec">Recup.</span></td><td contenteditable="true" class="r val">330000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">BSBIOS</td><td contenteditable="true" class="pr">A definir</td><td><span class="badge rec">Recup.</span></td><td contenteditable="true" class="r val">330000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Eletromidia</td><td contenteditable="true" class="pr">Robótica nas escolas</td><td><span class="badge rec">Recup.</span></td><td contenteditable="true" class="r val">300000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Anjo Química</td><td contenteditable="true" class="pr">Conhecendo os ODS</td><td><span class="badge rec">Recup.</span></td><td contenteditable="true" class="r val">250000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Leaseplan</td><td contenteditable="true" class="pr">Caminhão ODS</td><td><span class="badge rec">Recup.</span></td><td contenteditable="true" class="r val">250000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">BR Partners</td><td contenteditable="true" class="pr">Caminhão ODS</td><td><span class="badge rec">Recup.</span></td><td contenteditable="true" class="r val">250000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Aksell Química</td><td contenteditable="true" class="pr">A definir</td><td><span class="badge rec">Recup.</span></td><td contenteditable="true" class="r val">200000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Cana Verde</td><td contenteditable="true" class="pr">PIE</td><td><span class="badge rec">Recup.</span></td><td contenteditable="true" class="r val">200000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Copergás</td><td contenteditable="true" class="pr">Conhecendo os ODS</td><td><span class="badge rec">Recup.</span></td><td contenteditable="true" class="r val">200000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option selected>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Óleo Menu</td><td contenteditable="true" class="pr">CineGastroArte</td><td><span class="badge rec">Recup.</span></td><td contenteditable="true" class="r val">150000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Barigui</td><td contenteditable="true" class="pr">A reativar</td><td><span class="badge rec">Recup.</span></td><td contenteditable="true" class="r val">150000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">B&amp;T</td><td contenteditable="true" class="pr">A reativar</td><td><span class="badge rec">Recup.</span></td><td contenteditable="true" class="r val">150000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Porto de Suape</td><td contenteditable="true" class="pr">Conhecendo os ODS</td><td><span class="badge rec">Recup.</span></td><td contenteditable="true" class="r val">100000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+        </tbody>
+      </table>
+      <div class="add-row" onclick="addRow('f_c','rec',false)">+ adicionar recuperação</div>
+    </div>
+
+    <div class="sec"><span class="n">10</span><h2>10 propostas de Junho</h2><span class="h">Faixa A e B prioritárias de tempo</span></div>
+    <div class="props">
+      <h3>Carteira priorizada — Junho 2026 · Fernando</h3>
+      <div class="sub">Critério: clientes de upsell (A) e prospects ≥R$500k (B) ganham prioridade de agenda. Recuperações entram com fechamentos iminentes.</div>
+      <ul class="plist">
+        <li><span class="pnum">01</span><span class="pname" contenteditable="true">Ferroport <span class="pmeta" contenteditable="true">Proposta R$ 900k na mesa — FECHAR este mês</span></span><span class="ptag c">FAIXA C ⚡</span></li>
+        <li><span class="pnum">02</span><span class="pname" contenteditable="true">CNH <span class="pmeta" contenteditable="true">Agro Futuro Cultural + verba direta extra R$ 600k</span></span><span class="ptag a">FAIXA A</span></li>
+        <li><span class="pnum">03</span><span class="pname" contenteditable="true">Vibra Energia <span class="pmeta" contenteditable="true">Caminhão CODS — alinhar +20% (R$ 2,4M → R$ 2,88M)</span></span><span class="ptag a">FAIXA A</span></li>
+        <li><span class="pnum">04</span><span class="pname" contenteditable="true">Repsol (Lab) <span class="pmeta" contenteditable="true">Caminhão CODS — realinhar comunicação primeiro</span></span><span class="ptag a">FAIXA A</span></li>
+        <li><span class="pnum">05</span><span class="pname" contenteditable="true">Wilson &amp; Sons <span class="pmeta" contenteditable="true">CODS escolas / PEC — upsell de cliente</span></span><span class="ptag a">FAIXA A</span></li>
+        <li><span class="pnum">06</span><span class="pname" contenteditable="true">Copergás <span class="pmeta" contenteditable="true">Conhecendo os ODS — recuperar conta</span></span><span class="ptag c">FAIXA C</span></li>
+        <li><span class="pnum">07</span><span class="pname" contenteditable="true">BIC <span class="pmeta" contenteditable="true">PIE — recuperação prioritária</span></span><span class="ptag c">FAIXA C</span></li>
+        <li><span class="pnum">08</span><span class="pname" contenteditable="true">Bosch <span class="pmeta" contenteditable="true">Prospect novo — abrir conta</span></span><span class="ptag b">FAIXA B</span></li>
+        <li><span class="pnum">09</span><span class="pname" contenteditable="true">Dislub <span class="pmeta" contenteditable="true">Prospect — abrir conta</span></span><span class="ptag b">FAIXA B</span></li>
+        <li><span class="pnum">10</span><span class="pname" contenteditable="true">Energisa <span class="pmeta" contenteditable="true">Lab personalizado — destravar conta em 0%</span></span><span class="ptag c">FAIXA C</span></li>
+      </ul>
+    </div>
+
+    <div class="sec"><span class="n">J</span><h2>Plano de Junho</h2><span class="h">execução das 10 propostas</span></div>
+    <div class="month">
+      <h3>Ciclo de 4 semanas — Fernando</h3>
+      <div class="ms">Foco: fechar Ferroport (R$ 900k na mesa) + upsell em clientes Faixa A + abertura/avanço da Faixa B</div>
+      <div class="mgrid">
+        <div class="mc"><div class="mw">Semana 1 · 02–06 jun</div><ul>
+          <li contenteditable="true">Fechar Ferroport (R$ 900k)</li>
+          <li contenteditable="true">Realinhamento Repsol</li>
+          <li contenteditable="true">Devolutiva CNH (sexta) + verba R$ 600k</li>
+          <li contenteditable="true">FUP Vibra Energia +20%</li>
+        </ul></div>
+        <div class="mc"><div class="mw">Semana 2 · 09–13 jun</div><ul>
+          <li contenteditable="true">Upsell Wilson &amp; Sons (CODS/PEC)</li>
+          <li contenteditable="true">Abrir prospect Bosch</li>
+          <li contenteditable="true">FUP BTG / Mobiauto</li>
+          <li contenteditable="true">Mapear bancos de investimento (XP em ago)</li>
+        </ul></div>
+        <div class="mc"><div class="mw">Semana 3 · 16–20 jun</div><ul>
+          <li contenteditable="true">Recuperar Copergás</li>
+          <li contenteditable="true">Recuperação BIC (PIE)</li>
+          <li contenteditable="true">Destravar Energisa</li>
+          <li contenteditable="true">SOTREQ — upsell PIE</li>
+        </ul></div>
+        <div class="mc"><div class="mw">Semana 4 · 23–30 jun</div><ul>
+          <li contenteditable="true">Fechamento mês + KPIs</li>
+          <li contenteditable="true">Recuperação: BIC / Celesc / Paranaiba</li>
+          <li contenteditable="true">Atualizar projeção 2026</li>
+          <li contenteditable="true">Selecionar 10 propostas de julho</li>
+        </ul></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ ABÍLIO ============ -->
+  <div class="pane" id="abilio">
+    <h1>Plano <em>Abílio</em></h1>
+    <p class="lede">Meta individual <strong>R$ <span id="ref_meta_a">12</span>M</strong> · clientes ≥R$1M personalizados · grandes contas (Bom Futuro).</p>
+
+    <div class="stats">
+      <div class="stat real"><div class="l">Realizado 2026</div><div class="v">R$ <span id="rv_a_stat">1.365.000</span></div><div class="f">2 contratos · 11,4% da meta R$12M</div></div>
+      <div class="stat"><div class="l">Pipeline bruto</div><div class="v">R$ <span id="a_bruto">0</span></div><div class="f"><span id="a_count">0</span> oportunidades</div></div>
+      <div class="stat gold"><div class="l">Faixa A · com +20%</div><div class="v">R$ <span id="a_a20">0</span></div><div class="f">previsão: R$ <span id="a_a_atual">0</span></div></div>
+      <div class="stat slate"><div class="l">Faixa B · pipeline</div><div class="v">R$ <span id="a_b_tot">0</span></div><div class="f">a 50%: R$ <span id="a_b_50">0</span></div></div>
+      <div class="stat rust"><div class="l">Faixa C · pipeline</div><div class="v">R$ <span id="a_c_tot">0</span></div><div class="f">a 50%: R$ <span id="a_c_50">0</span></div></div>
+    </div>
+
+    <div class="gap-block">
+      <h3>GAP para a meta de R$ <span id="a_meta_ref">12</span>M</h3>
+      <div class="sub">Cenário: Faixa A com +20% (upsell) + Faixa B e C convertendo 50%</div>
+      <div class="gap-grid">
+        <div class="gap-cell"><div class="lab">Faixa A · +20% clientes</div><div class="val">R$ <span id="a_real_a">0</span></div><div class="pct">100% do upsell</div></div>
+        <div class="gap-cell"><div class="lab">Faixa B · 50% prospect</div><div class="val">R$ <span id="a_real_b">0</span></div><div class="pct">conversão realista</div></div>
+        <div class="gap-cell"><div class="lab">Faixa C · 50% recup.</div><div class="val">R$ <span id="a_real_c">0</span></div><div class="pct">extra meta</div></div>
+        <div class="gap-cell total"><div class="lab">Total realista</div><div class="val">R$ <span id="a_real_tot">0</span></div><div class="pct"><span id="a_gap_msg">—</span></div></div>
+      </div>
+    </div>
+
+    <div class="obs">
+      <h3>Observações Abílio — pontos de atenção</h3>
+      <ul>
+        
+        <li contenteditable="true"><strong>Bom Futuro:</strong> R$ 2,5M em Caminhão ODS — segunda gigante travada em 0%. Destravar mesmo que parcial gera grande impacto.</li>
+        <li contenteditable="true"><strong>Áster:</strong> proposta em pagamento — manter blindagem do contrato.</li>
+      </ul>
+    </div>
+
+    <div class="sec"><span class="n">A</span><h2>Faixa A · Clientes</h2><span class="h">meta R$ 8M · clientes ≥ R$500k · alvo: +20%</span></div>
+    <div class="tier">
+      <div class="th a">
+        <span>Clientes ativos com previsão ≥ R$ 500k</span>
+        <span class="sum">
+          <span>Previsão: <b>R$ <span id="a_th_a">0</span></b></span>
+          <span>+20%: <b>R$ <span id="a_th_a20">0</span></b></span>
+        </span>
+      </div>
+      <table>
+        <thead><tr><th class="h">Empresa</th><th class="h">Produto</th><th class="h">Tipo</th><th class="h">Previsão</th><th class="h">+20% (onde chegar)</th><th class="h">Status</th><th class="h">Mês</th><th class="h sc">Score</th><th class="h"></th></tr></thead>
+        <tbody data-ae="a_a">
+          <tr><td contenteditable="true" class="nm">GRU Aeroporto</td><td contenteditable="true" class="pr">Renovação Programas</td><td><span class="badge cli">Cliente</span></td><td contenteditable="true" class="r val">2500000</td><td class="r up plus20"></td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">TAG</td><td contenteditable="true" class="pr">Padrão projetos NTICS</td><td><span class="badge cli">Cliente</span></td><td contenteditable="true" class="r val">1500000</td><td class="r up plus20"></td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option selected>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Samarco</td><td contenteditable="true" class="pr">A definir</td><td><span class="badge cli">Cliente</span></td><td contenteditable="true" class="r val">1500000</td><td class="r up plus20"></td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option selected>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Samarco</td><td contenteditable="true" class="pr">Culinária sustentável</td><td><span class="badge cli">Cliente</span></td><td contenteditable="true" class="r val">1000000</td><td class="r up plus20"></td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option selected>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Rabobank</td><td contenteditable="true" class="pr">Programas personalizados</td><td><span class="badge cli">Cliente</span></td><td contenteditable="true" class="r val">1000000</td><td class="r up plus20"></td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option selected>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">ASTER MAQUINAS</td><td contenteditable="true" class="pr">A definir</td><td><span class="badge cli">Cliente</span></td><td contenteditable="true" class="r val">1000000</td><td class="r up plus20"></td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Whirpool</td><td contenteditable="true" class="pr">Programas personalizados</td><td><span class="badge cli">Cliente</span></td><td contenteditable="true" class="r val">800000</td><td class="r up plus20"></td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Vestas</td><td contenteditable="true" class="pr">Padrão projetos NTICS</td><td><span class="badge cli">Cliente</span></td><td contenteditable="true" class="r val">500000</td><td class="r up plus20"></td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">SADA</td><td contenteditable="true" class="pr">Programas personalizados</td><td><span class="badge cli">Cliente</span></td><td contenteditable="true" class="r val">500000</td><td class="r up plus20"></td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option selected>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Jaepel</td><td contenteditable="true" class="pr">Padrão projetos NTICS</td><td><span class="badge cli">Cliente</span></td><td contenteditable="true" class="r val">400000</td><td class="r up plus20"></td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option selected>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Imetame</td><td contenteditable="true" class="pr">Caminhão MHS</td><td><span class="badge cli">Cliente</span></td><td contenteditable="true" class="r val">300000</td><td class="r up plus20"></td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Dexco</td><td contenteditable="true" class="pr">A definir</td><td><span class="badge cli">Cliente</span></td><td contenteditable="true" class="r val">250000</td><td class="r up plus20"></td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">SYLVAMO - International Paper</td><td contenteditable="true" class="pr">Padrão projetos NTICS</td><td><span class="badge cli">Cliente</span></td><td contenteditable="true" class="r val">200000</td><td class="r up plus20"></td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option selected>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Compagás</td><td contenteditable="true" class="pr">Padrão projetos NTICS</td><td><span class="badge cli">Cliente</span></td><td contenteditable="true" class="r val">200000</td><td class="r up plus20"></td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Áster</td><td contenteditable="true" class="pr">Festival CInegastroarte</td><td><span class="badge cli">Cliente</span></td><td contenteditable="true" class="r val">150000</td><td class="r up plus20"></td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Moove</td><td contenteditable="true" class="pr">FESTIVAL ODS e PEC</td><td><span class="badge cli">Cliente</span></td><td contenteditable="true" class="r val">100000</td><td class="r up plus20"></td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Peróxidos do Brasil</td><td contenteditable="true" class="pr">Padrão projetos NTICS</td><td><span class="badge cli">Cliente</span></td><td contenteditable="true" class="r val">90000</td><td class="r up plus20"></td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Áster</td><td contenteditable="true" class="pr">Projeto Cinegastroarte</td><td><span class="badge cli">Cliente</span></td><td contenteditable="true" class="r val">65500</td><td class="r up plus20"></td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+        </tbody>
+      </table>
+      <div class="add-row" onclick="addRow('a_a','cli',true)">+ adicionar cliente</div>
+    </div>
+
+    <div class="sec b"><span class="n">B</span><h2>Faixa B · Prospects</h2><span class="h">meta R$ 4M · prospects ≥ R$500k</span></div>
+    <div class="tier">
+      <div class="th b">
+        <span>Prospects com previsão ≥ R$ 500k</span>
+        <span class="sum"><span>Pipeline: <b>R$ <span id="a_th_b">0</span></b></span><span>A 50%: <b>R$ <span id="a_th_b50">0</span></b></span></span>
+      </div>
+      <table>
+        <thead><tr><th class="h">Empresa</th><th class="h">Produto</th><th class="h">Tipo</th><th class="h">Previsão</th><th class="h">Status</th><th class="h">Mês</th><th class="h sc">Score</th><th class="h"></th></tr></thead>
+        <tbody data-ae="a_b">
+          <tr><td contenteditable="true" class="nm">NuBank</td><td contenteditable="true" class="pr">A definir</td><td><span class="badge pro">Prospect</span></td><td contenteditable="true" class="r val">2000000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Bom futuro</td><td contenteditable="true" class="pr">Separô - ampliação / Caminhão História do Algodão</td><td><span class="badge pro">Prospect</span></td><td contenteditable="true" class="r val">1000000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Kinross</td><td contenteditable="true" class="pr">Saberes Essenciais / Circo</td><td><span class="badge pro">Prospect</span></td><td contenteditable="true" class="r val">1000000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Kepler Weber</td><td contenteditable="true" class="pr">Caminhão ODS</td><td><span class="badge pro">Prospect</span></td><td contenteditable="true" class="r val">500000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option selected>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Inpasa</td><td contenteditable="true" class="pr">CODS + CODS nas escolas</td><td><span class="badge pro">Prospect</span></td><td contenteditable="true" class="r val">500000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Rumo</td><td contenteditable="true" class="pr">A definir</td><td><span class="badge pro">Prospect</span></td><td contenteditable="true" class="r val">500000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Instututo John Deere</td><td contenteditable="true" class="pr">A definir</td><td><span class="badge pro">Prospect</span></td><td contenteditable="true" class="r val">500000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Cebrace</td><td contenteditable="true" class="pr">A definir</td><td><span class="badge pro">Prospect</span></td><td contenteditable="true" class="r val">500000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Sonoco</td><td contenteditable="true" class="pr">Caminhão da reciclagem</td><td><span class="badge pro">Prospect</span></td><td contenteditable="true" class="r val">400000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Westrock</td><td contenteditable="true" class="pr">Caminhão da reciclagem</td><td><span class="badge pro">Prospect</span></td><td contenteditable="true" class="r val">350000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Ecourbis</td><td contenteditable="true" class="pr">Diagnóstico</td><td><span class="badge pro">Prospect</span></td><td contenteditable="true" class="r val">350000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">LCM</td><td contenteditable="true" class="pr">Festival Cinegastroarte</td><td><span class="badge pro">Prospect</span></td><td contenteditable="true" class="r val">300000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Aura Minerals</td><td contenteditable="true" class="pr">A definir</td><td><span class="badge pro">Prospect</span></td><td contenteditable="true" class="r val">300000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Iguaçu Máquinas</td><td contenteditable="true" class="pr">MHS / ODS nas escolas</td><td><span class="badge pro">Prospect</span></td><td contenteditable="true" class="r val">250000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Total Express</td><td contenteditable="true" class="pr">A definir</td><td><span class="badge pro">Prospect</span></td><td contenteditable="true" class="r val">250000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Avery desyson</td><td contenteditable="true" class="pr">Caminhão ODS / reciclagem</td><td><span class="badge pro">Prospect</span></td><td contenteditable="true" class="r val">250000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Gasmig</td><td contenteditable="true" class="pr">A definir</td><td><span class="badge pro">Prospect</span></td><td contenteditable="true" class="r val">250000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Wiz</td><td contenteditable="true" class="pr">A definir</td><td><span class="badge pro">Prospect</span></td><td contenteditable="true" class="r val">250000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Chlorum Solution</td><td contenteditable="true" class="pr">Conhecendo os ODS nas Escolas</td><td><span class="badge pro">Prospect</span></td><td contenteditable="true" class="r val">250000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Ciamara Máquinas</td><td contenteditable="true" class="pr">MHS / ODS nas escolas</td><td><span class="badge pro">Prospect</span></td><td contenteditable="true" class="r val">150000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Agro Amazônia</td><td contenteditable="true" class="pr">A definir</td><td><span class="badge pro">Prospect</span></td><td contenteditable="true" class="r val">0</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+        </tbody>
+      </table>
+      <div class="add-row" onclick="addRow('a_b','pro',false)">+ adicionar prospect</div>
+    </div>
+
+    <div class="sec c"><span class="n">C</span><h2>Faixa C · Recuperação</h2><span class="h">extra meta R$ 3M · ciclo curto (já compraram)</span></div>
+    <div class="tier">
+      <div class="th c">
+        <span>Contas em recuperação + travadas</span>
+        <span class="sum"><span>Pipeline: <b>R$ <span id="a_th_c">0</span></b></span><span>A 50%: <b>R$ <span id="a_th_c50">0</span></b></span></span>
+      </div>
+      <table>
+        <thead><tr><th class="h">Empresa</th><th class="h">Produto</th><th class="h">Tipo</th><th class="h">Previsão</th><th class="h">Status</th><th class="h">Mês</th><th class="h sc">Score</th><th class="h"></th></tr></thead>
+        <tbody data-ae="a_c">
+          <tr><td contenteditable="true" class="nm">CTG</td><td contenteditable="true" class="pr">Programas personalizados</td><td><span class="badge rec">Recup.</span></td><td contenteditable="true" class="r val">1000000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Comgás</td><td contenteditable="true" class="pr">A definir</td><td><span class="badge rec">Recup.</span></td><td contenteditable="true" class="r val">500000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Bayer</td><td contenteditable="true" class="pr">MHS</td><td><span class="badge rec">Recup.</span></td><td contenteditable="true" class="r val">500000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">J mendes</td><td contenteditable="true" class="pr">A definir</td><td><span class="badge rec">Recup.</span></td><td contenteditable="true" class="r val">500000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">NGK - Niterra</td><td contenteditable="true" class="pr">A definir</td><td><span class="badge rec">Recup.</span></td><td contenteditable="true" class="r val">500000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Ingredion Brasil Ingredientes Industriais Ltda.</td><td contenteditable="true" class="pr">A definir</td><td><span class="badge rec">Recup.</span></td><td contenteditable="true" class="r val">500000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option selected>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Tetrapak</td><td contenteditable="true" class="pr">A definir</td><td><span class="badge rec">Recup.</span></td><td contenteditable="true" class="r val">400000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">ISACTEEP</td><td contenteditable="true" class="pr">Escolas</td><td><span class="badge rec">Recup.</span></td><td contenteditable="true" class="r val">300000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option selected>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Iguá</td><td contenteditable="true" class="pr">A definir</td><td><span class="badge rec">Recup.</span></td><td contenteditable="true" class="r val">300000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Bemol</td><td contenteditable="true" class="pr">A definir</td><td><span class="badge rec">Recup.</span></td><td contenteditable="true" class="r val">300000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Colgate</td><td contenteditable="true" class="pr">A definir</td><td><span class="badge rec">Recup.</span></td><td contenteditable="true" class="r val">300000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Enercan</td><td contenteditable="true" class="pr">A definir</td><td><span class="badge rec">Recup.</span></td><td contenteditable="true" class="r val">300000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Novelis</td><td contenteditable="true" class="pr">A definir</td><td><span class="badge rec">Recup.</span></td><td contenteditable="true" class="r val">300000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Teleperformance</td><td contenteditable="true" class="pr">Festival Cinegastroarte</td><td><span class="badge rec">Recup.</span></td><td contenteditable="true" class="r val">200000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+          <tr><td contenteditable="true" class="nm">Briedgestone</td><td contenteditable="true" class="pr">A definir</td><td><span class="badge rec">Recup.</span></td><td contenteditable="true" class="r val">0</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+        </tbody>
+      </table>
+      <div class="add-row" onclick="addRow('a_c','rec',false)">+ adicionar recuperação</div>
+    </div>
+
+    <div class="sec"><span class="n">10</span><h2>10 propostas de Junho</h2><span class="h">Faixa A e B prioritárias de tempo</span></div>
+    <div class="props">
+      <h3>Carteira priorizada — Junho 2026 · Abílio</h3>
+      <div class="sub">Critério: ataque à gigante Bom Futuro + upsell nos clientes grandes (TAG/Rabobank/CTG/Bayer/Whirlpool). Recuperação entra no decorrer do mês.</div>
+      <ul class="plist">
+        <li><span class="pnum">01</span><span class="pname" contenteditable="true">Bom Futuro <span class="pmeta" contenteditable="true">R$ 1M — destravar Caminhão ODS (prospect quente)</span></span><span class="ptag b">FAIXA B ⚡</span></li>
+        <li><span class="pnum">02</span><span class="pname" contenteditable="true">TAG <span class="pmeta" contenteditable="true">Padrão NTICS — fechar cliente (R$ 1,5M)</span></span><span class="ptag a">FAIXA A</span></li>
+        <li><span class="pnum">03</span><span class="pname" contenteditable="true">Rabobank <span class="pmeta" contenteditable="true">Programas personalizados — upsell (R$ 1M)</span></span><span class="ptag a">FAIXA A</span></li>
+        <li><span class="pnum">04</span><span class="pname" contenteditable="true">CTG Brasil <span class="pmeta" contenteditable="true">Conhecendo os ODS — upsell +20%</span></span><span class="ptag a">FAIXA A</span></li>
+        <li><span class="pnum">05</span><span class="pname" contenteditable="true">Bayer <span class="pmeta" contenteditable="true">Definir produto + upsell — R$ 1,5M</span></span><span class="ptag a">FAIXA A</span></li>
+        <li><span class="pnum">06</span><span class="pname" contenteditable="true">Whirlpool <span class="pmeta" contenteditable="true">Verba MKT Caminhão Resíduos — sustentar +20%</span></span><span class="ptag a">FAIXA A</span></li>
+        <li><span class="pnum">07</span><span class="pname" contenteditable="true">Jaepel <span class="pmeta" contenteditable="true">Padrão NTICS — avançar conta (R$ 400k)</span></span><span class="ptag a">FAIXA A</span></li>
+        <li><span class="pnum">08</span><span class="pname" contenteditable="true">SADA <span class="pmeta" contenteditable="true">Programas personalizados — abrir (R$ 500k)</span></span><span class="ptag a">FAIXA A</span></li>
+        <li><span class="pnum">09</span><span class="pname" contenteditable="true">SYLVAMO <span class="pmeta" contenteditable="true">Padrão NTICS — avançar (R$ 200k)</span></span><span class="ptag a">FAIXA A</span></li>
+        <li><span class="pnum">10</span><span class="pname" contenteditable="true">Cebrace <span class="pmeta" contenteditable="true">Caminhão ODS — avançar proposta</span></span><span class="ptag b">FAIXA B</span></li>
+      </ul>
+    </div>
+
+    <div class="sec"><span class="n">J</span><h2>Plano de Junho</h2><span class="h">execução das 10 propostas</span></div>
+    <div class="month">
+      <h3>Ciclo de 4 semanas — Abílio</h3>
+      <div class="ms">Foco: destravar a gigante Bom Futuro + upsell R$1,5M+ em clientes Faixa A (TAG, Rabobank)</div>
+      <div class="mgrid">
+        <div class="mc"><div class="mw">Semana 1 · 02–06 jun</div><ul>
+          <li contenteditable="true">Plano de ataque Bom Futuro</li>
+          <li contenteditable="true">Plano Bom Futuro (mapear decisor)</li>
+          <li contenteditable="true">FUP CTG +20%</li>
+          <li contenteditable="true">Reunião Kepler Weber</li>
+        </ul></div>
+        <div class="mc"><div class="mw">Semana 2 · 09–13 jun</div><ul>
+          <li contenteditable="true">Reunião decisória Bom Futuro</li>
+          <li contenteditable="true">Definir produto Bayer (R$1,5M)</li>
+          <li contenteditable="true"><strong>Frente setorial:</strong> abrir Mineração / Saneamento / Energia (ver abaixo)</li>
+          <li contenteditable="true">Avançar Whirlpool</li>
+        </ul></div>
+        <div class="mc"><div class="mw">Semana 3 · 16–20 jun</div><ul>
+          <li contenteditable="true">Reunião decisória Bom Futuro</li>
+          <li contenteditable="true">Destravar Ingredion (definir produto)</li>
+          <li contenteditable="true">Avançar Cebrace + MRS</li>
+          <li contenteditable="true">FUP J Mendes / Comgás</li>
+        </ul></div>
+        <div class="mc"><div class="mw">Semana 4 · 23–30 jun</div><ul>
+          <li contenteditable="true">Fechamento mês + KPIs</li>
+          <li contenteditable="true">Status final gigante (Bom Futuro)</li>
+          <li contenteditable="true">Recuperação: Tetrapak / Ajinomoto</li>
+          <li contenteditable="true">Selecionar 10 propostas de julho</li>
+        </ul></div>
+      </div>
+    </div>
+
+    <div class="sec"><span class="n">S2</span><h2>Prospecção por setor — Semana 2</h2><span class="h">frentes segmentadas · Abílio</span></div>
+    <div class="sectors">
+      <div class="sector min">
+        <div class="sechd"><span class="seico">⛏</span><div><div class="setit">Mineração</div><div class="sesub">decisores ESG fortes · ticket alto</div></div></div>
+        <ul class="selist">
+          <li><span class="sename" contenteditable="true">Kinross</span><span class="sebadge pro">Prospect</span><span class="seval" contenteditable="true">R$ 1.000.000</span></li>
+          <li><span class="sename" contenteditable="true">Aura Minerals</span><span class="sebadge pro">Prospect</span><span class="seval" contenteditable="true">R$ 300.000</span></li>
+          <li><span class="sename" contenteditable="true">MRN</span><span class="sebadge pro">Prospect</span><span class="seval" contenteditable="true">R$ 350.000</span></li>
+        </ul>
+        <div class="seact" contenteditable="true">Ângulo: Saberes Essenciais + Caminhão ODS em comunidades de operação.</div>
+      </div>
+      <div class="sector san">
+        <div class="sechd"><span class="seico">💧</span><div><div class="setit">Saneamento</div><div class="sesub">modelo Iguá · contrapartida em obras</div></div></div>
+        <ul class="selist">
+          <li><span class="sename" contenteditable="true">Ecourbis</span><span class="sebadge pro">Prospect</span><span class="seval" contenteditable="true">R$ 350.000</span></li>
+          <li><span class="sename" contenteditable="true">Iguá</span><span class="sebadge rec">Recup.</span><span class="seval" contenteditable="true">R$ 300.000</span></li>
+        </ul>
+        <div class="seact" contenteditable="true">Ângulo: reativar modelo Iguá (destinação de contrapartida social a obras).</div>
+      </div>
+      <div class="sector ene">
+        <div class="sechd"><span class="seico">⚡</span><div><div class="setit">Energia</div><div class="sesub">verba ESG recorrente · pulverização nacional</div></div></div>
+        <ul class="selist">
+          <li><span class="sename" contenteditable="true">Inpasa</span><span class="sebadge pro">Prospect</span><span class="seval" contenteditable="true">R$ 500.000</span></li>
+          <li><span class="sename" contenteditable="true">Gasmig</span><span class="sebadge pro">Prospect</span><span class="seval" contenteditable="true">R$ 250.000</span></li>
+          <li><span class="sename" contenteditable="true">Comgás</span><span class="sebadge rec">Recup.</span><span class="seval" contenteditable="true">R$ 500.000</span></li>
+          <li><span class="sename" contenteditable="true">Enercan</span><span class="sebadge rec">Recup.</span><span class="seval" contenteditable="true">R$ 300.000</span></li>
+        </ul>
+        <div class="seact" contenteditable="true">Ângulo: Conhecendo os ODS + eficiência energética nas cidades de operação.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ LUCAS ============ -->
+  <div class="pane" id="lucas">
+    <h1>Plano <em>Lucas</em></h1>
+    <p class="lede">Meta R$ <span id="l_meta_total">7,5</span>M · entra em junho · Exposição (R$ <span id="ref_meta_le">5</span>M, produto novo) + Educação/Saberes Essenciais (R$ <span id="ref_meta_ledu">2,5</span>M).</p>
+
+    <div class="stats">
+      <div class="stat real"><div class="l">Realizado 2026</div><div class="v">R$ <span id="rv_l_stat">0</span></div><div class="f">0 contratos · meta R$7,5M</div></div>
+      <div class="stat"><div class="l">Pipeline bruto</div><div class="v">R$ <span id="l_bruto">0</span></div><div class="f"><span id="l_count">0</span> oportunidades</div></div>
+      <div class="stat gold"><div class="l">Exposição · pipeline</div><div class="v">R$ <span id="l_e_tot">0</span></div><div class="f">a 50%: R$ <span id="l_e_50">0</span></div></div>
+      <div class="stat slate"><div class="l">Saberes · pipeline</div><div class="v">R$ <span id="l_s_tot">0</span></div><div class="f">a 50%: R$ <span id="l_s_50">0</span></div></div>
+      <div class="stat rust"><div class="l">A estruturar</div><div class="v">R$ <span id="l_gap">0</span></div><div class="f">para atingir meta</div></div>
+    </div>
+
+    <div class="info">⚠ <strong>Frente nova:</strong> Exposição é produto a estruturar — adicione contas conforme forem mapeadas (cidades-alvo tipo Cuiabá). Saberes Essenciais aproveita base existente.</div>
+
+    <div class="obs">
+      <h3>Observações Lucas — onboarding em junho</h3>
+      <ul>
+        <li contenteditable="true"><strong>Exposição:</strong> produto novo precisa de cotas, material comercial e lista de contas-alvo antes da prospecção</li>
+        <li contenteditable="true"><strong>Saberes Essenciais:</strong> usar base de relacionamento NTICS Educa para abertura mais rápida</li>
+        <li contenteditable="true"><strong>Meta jun-dez:</strong> 7 meses para atingir R$ 7,5M = R$ 1,07M/mês de ritmo</li>
+      </ul>
+    </div>
+
+    <div class="sec"><span class="n">E</span><h2>Frente Exposição</h2><span class="h">meta R$ 5M · produto novo</span></div>
+    <div class="tier">
+      <div class="th a">
+        <span>Pipeline Exposição (contas-alvo)</span>
+        <span class="sum"><span>Pipeline: <b>R$ <span id="l_th_e">0</span></b></span><span>A 50%: <b>R$ <span id="l_th_e50">0</span></b></span></span>
+      </div>
+      <table>
+        <thead><tr><th class="h">Empresa</th><th class="h">Produto/Cidade</th><th class="h">Tipo</th><th class="h">Valor</th><th class="h">Status</th><th class="h">Mês</th><th class="h sc">Score</th><th class="h"></th></tr></thead>
+        <tbody data-ae="l_e">
+          <tr><td contenteditable="true" class="nm" data-placeholder="empresa">A definir</td><td contenteditable="true" class="pr">Exposição Cuiabá</td><td><span class="badge pro">Prospect</span></td><td contenteditable="true" class="r val">500000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+        </tbody>
+      </table>
+      <div class="add-row" onclick="addRow('l_e','pro',false)">+ adicionar oportunidade de Exposição</div>
+    </div>
+
+    <div class="sec b"><span class="n">S</span><h2>Frente Educação / Saberes</h2><span class="h">meta R$ 2,5M</span></div>
+    <div class="tier">
+      <div class="th b">
+        <span>Pipeline Saberes Essenciais</span>
+        <span class="sum"><span>Pipeline: <b>R$ <span id="l_th_s">0</span></b></span><span>A 50%: <b>R$ <span id="l_th_s50">0</span></b></span></span>
+      </div>
+      <table>
+        <thead><tr><th class="h">Empresa</th><th class="h">Produto</th><th class="h">Tipo</th><th class="h">Valor</th><th class="h">Status</th><th class="h">Mês</th><th class="h sc">Score</th><th class="h"></th></tr></thead>
+        <tbody data-ae="l_s">
+          <tr><td contenteditable="true" class="nm" data-placeholder="empresa">A definir</td><td contenteditable="true" class="pr">Saberes Essenciais</td><td><span class="badge pro">Prospect</span></td><td contenteditable="true" class="r val">300000</td><td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td></tr>
+        </tbody>
+      </table>
+      <div class="add-row" onclick="addRow('l_s','pro',false)">+ adicionar oportunidade de Educação</div>
+    </div>
+
+    <div class="sec"><span class="n">J</span><h2>Plano de Junho — Onboarding</h2><span class="h">mês de entrada</span></div>
+    <div class="month">
+      <h3>Ciclo de 4 semanas — Lucas</h3>
+      <div class="ms">Mês de entrada: estruturar produto Exposição, mapear contas e abrir Saberes Essenciais</div>
+      <div class="mgrid">
+        <div class="mc"><div class="mw">Semana 1 · 02–06 jun</div><ul>
+          <li contenteditable="true">Onboarding NTICS</li>
+          <li contenteditable="true">Estudo do portfólio</li>
+          <li contenteditable="true">Definir cotas Exposição</li>
+          <li contenteditable="true">Alinhamento com Ana</li>
+        </ul></div>
+        <div class="mc"><div class="mw">Semana 2 · 09–13 jun</div><ul>
+          <li contenteditable="true">Material comercial Exposição</li>
+          <li contenteditable="true">Lista 20 contas Cuiabá</li>
+          <li contenteditable="true">Lista 15 contas Saberes</li>
+          <li contenteditable="true">Validar pitch com Abílio</li>
+        </ul></div>
+        <div class="mc"><div class="mw">Semana 3 · 16–20 jun</div><ul>
+          <li contenteditable="true">Primeiras 5 reuniões</li>
+          <li contenteditable="true">Validação de preço/cota</li>
+          <li contenteditable="true">Calibrar pitch</li>
+          <li contenteditable="true">Abrir 3 Saberes</li>
+        </ul></div>
+        <div class="mc"><div class="mw">Semana 4 · 23–30 jun</div><ul>
+          <li contenteditable="true">Fechar 1ª proposta-teste</li>
+          <li contenteditable="true">Pipeline montado (≥10 contas)</li>
+          <li contenteditable="true">Plano de julho</li>
+          <li contenteditable="true">Check com Ana</li>
+        </ul></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ RESUMO ============ -->
+  <div class="pane" id="resumo">
+    <h1>Resumo <em>Consolidado</em></h1>
+    <p class="lede">Visão integrada dos três planos: cobertura de cada AE versus meta individual e da empresa.</p>
+
+    <div class="stats">
+      <div class="stat"><div class="l">Pipeline total bruto</div><div class="v">R$ <span id="t_bruto">0</span></div><div class="f">3 AEs somados</div></div>
+      <div class="stat gold"><div class="l">Cenário realista</div><div class="v">R$ <span id="t_real">0</span></div><div class="f">A+20% / B,C a 50%</div></div>
+      <div class="stat slate"><div class="l">Soma metas individuais</div><div class="v">R$ <span id="t_meta_ind">0</span></div><div class="f">overcommit: <span id="t_overcommit">0</span>%</div></div>
+      <div class="stat rust"><div class="l">Gap meta empresa</div><div class="v">R$ <span id="t_gap">0</span></div><div class="f">vs R$ <span id="t_meta_ref">25</span>M</div></div>
+    </div>
+
+    <div class="sec"><span class="n">1</span><h2>Por AE — cenário realista vs. meta</h2></div>
+    <div class="people">
+      <div class="person">
+        <div class="nm">Fernando (Clark)</div><div class="rl">meta R$ <span id="r_meta_f">12</span>M</div>
+        <div class="mt"><span id="r_cob_f">0</span>%</div>
+        <div class="ml">cobertura realista</div>
+        <div class="br">
+          <div><span>Pipeline bruto</span><strong>R$ <span id="r_bruto_f">0</span></strong></div>
+          <div><span>Cenário realista</span><strong>R$ <span id="r_real_f">0</span></strong></div>
+          <div><span>vs meta</span><strong id="r_gap_f">—</strong></div>
+        </div>
+      </div>
+      <div class="person gold">
+        <div class="nm">Abílio</div><div class="rl">meta R$ <span id="r_meta_a">12</span>M</div>
+        <div class="mt"><span id="r_cob_a">0</span>%</div>
+        <div class="ml">cobertura realista</div>
+        <div class="br">
+          <div><span>Pipeline bruto</span><strong>R$ <span id="r_bruto_a">0</span></strong></div>
+          <div><span>Cenário realista</span><strong>R$ <span id="r_real_a">0</span></strong></div>
+          <div><span>vs meta</span><strong id="r_gap_a">—</strong></div>
+        </div>
+      </div>
+      <div class="person rust">
+        <div class="nm">Lucas</div><div class="rl">meta R$ <span id="r_meta_l">7,5</span>M</div>
+        <div class="mt"><span id="r_cob_l">0</span>%</div>
+        <div class="ml">cobertura realista</div>
+        <div class="br">
+          <div><span>Pipeline bruto</span><strong>R$ <span id="r_bruto_l">0</span></strong></div>
+          <div><span>Cenário realista</span><strong>R$ <span id="r_real_l">0</span></strong></div>
+          <div><span>vs meta</span><strong id="r_gap_l">—</strong></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec"><span class="n">2</span><h2>Cobertura vs Meta Empresa</h2></div>
+    <div class="prog">
+      <div class="pt"><span>Cenário realista total vs. meta empresa R$ <span id="r_meta_e">25</span>M</span><span id="r_cob_e">0%</span></div>
+      <div class="track"><div class="fill" id="r_fill_e">R$ <span id="r_real_e">0</span></div></div>
+    </div>
+  </div>
+
+  <footer>NTICS · Planejamento Comercial 2026 · documento vivo, editável.<br>Faixa A: clientes ≥ R$500k (alvo +20%). Faixa B: prospects ≥ R$500k. Faixa C: recuperação (extra meta). GAP a 50% em B e C.</footer>
+
+</div>
+
+<script>
+function fmtBR(n){
+  if (n >= 1000000) return (n/1000000).toLocaleString('pt-BR',{maximumFractionDigits:2}) + 'M';
+  if (n >= 1000) return (n/1000).toLocaleString('pt-BR',{maximumFractionDigits:0}) + 'k';
+  return n.toLocaleString('pt-BR',{maximumFractionDigits:0});
+}
+function parseNum(s){
+  if (!s) return 0;
+  s = String(s).replace(/R\$/g,'').replace(/\./g,'').replace(',','.').replace(/[^0-9.\-]/g,'');
+  return parseFloat(s) || 0;
+}
+
+function showTab(e, id){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
+  e.target.classList.add('active');
+  document.getElementById(id).classList.add('active');
+  recalc();
+}
+
+function addRow(tbid, tipo, withUpsell){
+  const tbody = document.querySelector(`tbody[data-ae="${tbid}"]`);
+  const badges = {cli:'<span class="badge cli">Cliente</span>',pro:'<span class="badge pro">Prospect</span>',rec:'<span class="badge rec">Recup.</span>'};
+  const tr = document.createElement('tr');
+  const upCell = withUpsell ? '<td class="r up plus20"></td>' : '';
+  tr.innerHTML = `
+    <td contenteditable="true" class="nm" data-placeholder="empresa"></td>
+    <td contenteditable="true" class="pr" data-placeholder="produto"></td>
+    <td>${badges[tipo]||badges.pro}</td>
+    <td contenteditable="true" class="r val">0</td>
+    ${upCell}
+    <td class="stt"><select class="selstatus"><option value=""></option><option>Reunião agendada</option><option>Planejado</option><option>Negativa</option></select></td><td class="mes"><select class="selmes"><option value=""></option><option>Junho</option><option>Julho</option><option>Agosto</option><option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option></select></td><td contenteditable="true" class="sc score" data-placeholder="–"></td><td><button class="del" onclick="delRow(this)">×</button></td>`;
+  tbody.appendChild(tr);
+  attachListeners(tr);
+  recalc();
+  scheduleAutosave();
+}
+function delRow(btn){
+  btn.closest('tr').remove();
+  recalc();
+  scheduleAutosave();
+}
+
+function calcTbody(id){
+  const tbody = document.querySelector(`tbody[data-ae="${id}"]`);
+  if (!tbody) return {total:0,count:0};
+  let total=0,count=0;
+  tbody.querySelectorAll('tr').forEach(tr=>{
+    const v = parseNum(tr.querySelector('.val')?.textContent);
+    const upCell = tr.querySelector('.plus20');
+    if (upCell) upCell.textContent = v>0 ? 'R$ '+fmtBR(v*1.2) : '';
+    total += v;
+    count++;
+  });
+  return {total,count};
+}
+
+function getKey(k){
+  const el = document.querySelector(`[data-key="${k}"]`);
+  return el ? el.textContent : '0';
+}
+function setText(id,val){
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+function setWidth(id,pct){
+  const el = document.getElementById(id);
+  if (el) el.style.width = pct+'%';
+}
+
+function recalc(){
+  const metaF = parseNum(getKey('meta_fernando')) * 1000000;
+  const metaA = parseNum(getKey('meta_abilio')) * 1000000;
+  const metaLE = parseNum(getKey('meta_lucas_expo')) * 1000000;
+  const metaLEdu = parseNum(getKey('meta_lucas_edu')) * 1000000;
+  const metaL = metaLE + metaLEdu;
+  const metaEmpresa = parseNum(getKey('meta_empresa')) * 1000000;
+
+  // FERNANDO
+  const fa = calcTbody('f_a'), fb = calcTbody('f_b'), fc = calcTbody('f_c');
+  const fBruto = fa.total+fb.total+fc.total;
+  const fA20 = fa.total*1.2;
+  const fRealA = fA20;
+  const fRealB = fb.total*0.5;
+  const fRealC = fc.total*0.5;
+  const fRealTot = fRealA+fRealB+fRealC;
+
+  setText('f_bruto', fmtBR(fBruto));
+  setText('f_count', fa.count+fb.count+fc.count);
+  setText('f_a20', fmtBR(fA20));
+  setText('f_a_atual', fmtBR(fa.total));
+  setText('f_b_tot', fmtBR(fb.total));
+  setText('f_b_50', fmtBR(fb.total*0.5));
+  setText('f_c_tot', fmtBR(fc.total));
+  setText('f_c_50', fmtBR(fc.total*0.5));
+  setText('f_real_a', fmtBR(fRealA));
+  setText('f_real_b', fmtBR(fRealB));
+  setText('f_real_c', fmtBR(fRealC));
+  setText('f_real_tot', fmtBR(fRealTot));
+  setText('f_th_a', fmtBR(fa.total));
+  setText('f_th_a20', fmtBR(fA20));
+  setText('f_th_b', fmtBR(fb.total));
+  setText('f_th_b50', fmtBR(fb.total*0.5));
+  setText('f_th_c', fmtBR(fc.total));
+  setText('f_th_c50', fmtBR(fc.total*0.5));
+  setText('f_meta_ref', (metaF/1000000).toLocaleString('pt-BR',{maximumFractionDigits:1}));
+  setText('ref_meta_f', (metaF/1000000).toLocaleString('pt-BR',{maximumFractionDigits:1}));
+  const fDif = fRealTot - metaF;
+  setText('f_gap_msg', fDif>=0 ? 'R$ '+fmtBR(fDif)+' acima da meta ✓' : 'R$ '+fmtBR(Math.abs(fDif))+' falta');
+
+  // ABILIO
+  const aa = calcTbody('a_a'), ab = calcTbody('a_b'), ac = calcTbody('a_c');
+  const aBruto = aa.total+ab.total+ac.total;
+  const aA20 = aa.total*1.2;
+  const aRealA = aA20;
+  const aRealB = ab.total*0.5;
+  const aRealC = ac.total*0.5;
+  const aRealTot = aRealA+aRealB+aRealC;
+
+  setText('a_bruto', fmtBR(aBruto));
+  setText('a_count', aa.count+ab.count+ac.count);
+  setText('a_a20', fmtBR(aA20));
+  setText('a_a_atual', fmtBR(aa.total));
+  setText('a_b_tot', fmtBR(ab.total));
+  setText('a_b_50', fmtBR(ab.total*0.5));
+  setText('a_c_tot', fmtBR(ac.total));
+  setText('a_c_50', fmtBR(ac.total*0.5));
+  setText('a_real_a', fmtBR(aRealA));
+  setText('a_real_b', fmtBR(aRealB));
+  setText('a_real_c', fmtBR(aRealC));
+  setText('a_real_tot', fmtBR(aRealTot));
+  setText('a_th_a', fmtBR(aa.total));
+  setText('a_th_a20', fmtBR(aA20));
+  setText('a_th_b', fmtBR(ab.total));
+  setText('a_th_b50', fmtBR(ab.total*0.5));
+  setText('a_th_c', fmtBR(ac.total));
+  setText('a_th_c50', fmtBR(ac.total*0.5));
+  setText('a_meta_ref', (metaA/1000000).toLocaleString('pt-BR',{maximumFractionDigits:1}));
+  setText('ref_meta_a', (metaA/1000000).toLocaleString('pt-BR',{maximumFractionDigits:1}));
+  const aDif = aRealTot - metaA;
+  setText('a_gap_msg', aDif>=0 ? 'R$ '+fmtBR(aDif)+' acima da meta ✓' : 'R$ '+fmtBR(Math.abs(aDif))+' falta');
+
+  // LUCAS
+  const le = calcTbody('l_e'), ls = calcTbody('l_s');
+  const lBruto = le.total+ls.total;
+  const lRealTot = le.total*0.5 + ls.total*0.5;
+
+  setText('l_bruto', fmtBR(lBruto));
+  setText('l_count', le.count+ls.count);
+  setText('l_e_tot', fmtBR(le.total));
+  setText('l_e_50', fmtBR(le.total*0.5));
+  setText('l_s_tot', fmtBR(ls.total));
+  setText('l_s_50', fmtBR(ls.total*0.5));
+  setText('l_th_e', fmtBR(le.total));
+  setText('l_th_e50', fmtBR(le.total*0.5));
+  setText('l_th_s', fmtBR(ls.total));
+  setText('l_th_s50', fmtBR(ls.total*0.5));
+  setText('l_gap', fmtBR(Math.max(0,metaL-lRealTot)));
+  setText('l_meta_total', (metaL/1000000).toLocaleString('pt-BR',{maximumFractionDigits:1}));
+  setText('ref_meta_le', (metaLE/1000000).toLocaleString('pt-BR',{maximumFractionDigits:1}));
+  setText('ref_meta_ledu', (metaLEdu/1000000).toLocaleString('pt-BR',{maximumFractionDigits:1}));
+
+  // ESTRATEGIA
+  const somaInd = (metaF+metaA+metaL)/1000000;
+  const overc = metaEmpresa>0 ? ((metaF+metaA+metaL)/metaEmpresa-1)*100 : 0;
+  setText('soma_individual', somaInd.toLocaleString('pt-BR',{maximumFractionDigits:1}));
+  setText('meta_empresa_ref', (metaEmpresa/1000000).toLocaleString('pt-BR',{maximumFractionDigits:1}));
+  setText('overcommit', Math.round(overc));
+  setText('ritmo_fernando', '~R$ '+fmtBR(metaF/7)+' / mês (jun–dez)');
+  setText('ritmo_abilio', '~R$ '+fmtBR(metaA/7)+' / mês (jun–dez)');
+  setText('ritmo_lucas', '~R$ '+fmtBR(metaL/7)+' / mês (jun–dez)');
+  setText('meta_lucas_total', (metaL/1000000).toLocaleString('pt-BR',{maximumFractionDigits:1}));
+
+  // COMPOSICAO
+  let compoTotal = 0;
+  document.querySelectorAll('[data-comp]').forEach(b=>{
+    compoTotal += parseFloat(b.dataset.comp);
+  });
+  document.querySelectorAll('[data-comp]').forEach(b=>{
+    const v = parseFloat(b.dataset.comp);
+    b.style.width = (v/6*100)+'%';
+    b.textContent = 'R$ '+v.toLocaleString('pt-BR',{maximumFractionDigits:1})+'M';
+    const colors = ['var(--rust)','var(--gold)','var(--green)','var(--green-b)','var(--rust)','var(--slate)'];
+    const idx = Array.from(document.querySelectorAll('[data-comp]')).indexOf(b);
+    b.style.background = colors[idx] || 'var(--green)';
+  });
+  setText('compo_total', compoTotal.toLocaleString('pt-BR',{maximumFractionDigits:1}));
+
+  // RESUMO
+  const tBruto = fBruto+aBruto+lBruto;
+  const tReal = fRealTot+aRealTot+lRealTot;
+  const tMetaInd = metaF+metaA+metaL;
+  const overcommit = metaEmpresa>0 ? ((tMetaInd/metaEmpresa)-1)*100 : 0;
+
+  setText('t_bruto', fmtBR(tBruto));
+  setText('t_real', fmtBR(tReal));
+  setText('t_meta_ind', fmtBR(tMetaInd));
+  setText('t_overcommit', Math.round(overcommit));
+  setText('t_meta_ref', (metaEmpresa/1000000).toLocaleString('pt-BR',{maximumFractionDigits:1}));
+  setText('t_gap', fmtBR(Math.max(0,metaEmpresa-tReal)));
+
+  setText('r_meta_f', (metaF/1000000).toLocaleString('pt-BR',{maximumFractionDigits:1}));
+  setText('r_meta_a', (metaA/1000000).toLocaleString('pt-BR',{maximumFractionDigits:1}));
+  setText('r_meta_l', (metaL/1000000).toLocaleString('pt-BR',{maximumFractionDigits:1}));
+  setText('r_meta_e', (metaEmpresa/1000000).toLocaleString('pt-BR',{maximumFractionDigits:1}));
+  setText('r_bruto_f', fmtBR(fBruto));
+  setText('r_bruto_a', fmtBR(aBruto));
+  setText('r_bruto_l', fmtBR(lBruto));
+  setText('r_real_f', fmtBR(fRealTot));
+  setText('r_real_a', fmtBR(aRealTot));
+  setText('r_real_l', fmtBR(lRealTot));
+  setText('r_real_e', fmtBR(tReal));
+  setText('r_cob_f', Math.round(metaF>0?fRealTot/metaF*100:0));
+  setText('r_cob_a', Math.round(metaA>0?aRealTot/metaA*100:0));
+  setText('r_cob_l', Math.round(metaL>0?lRealTot/metaL*100:0));
+  setText('r_cob_e', Math.round(metaEmpresa>0?tReal/metaEmpresa*100:0)+'%');
+  setText('r_gap_f', fDif>=0?'+R$ '+fmtBR(fDif)+' ✓':'-R$ '+fmtBR(Math.abs(fDif)));
+  setText('r_gap_a', aDif>=0?'+R$ '+fmtBR(aDif)+' ✓':'-R$ '+fmtBR(Math.abs(aDif)));
+  const lDif = lRealTot - metaL;
+  setText('r_gap_l', lDif>=0?'+R$ '+fmtBR(lDif)+' ✓':'-R$ '+fmtBR(Math.abs(lDif)));
+  setWidth('r_fill_e', metaEmpresa>0?Math.min(100,tReal/metaEmpresa*100):0);
+}
+
+function attachListeners(scope){
+  const root = scope||document;
+  root.querySelectorAll('[contenteditable="true"]').forEach(el=>{
+    if (!el.dataset.listening){
+      el.addEventListener('input', ()=>{ recalc(); scheduleAutosave(); });
+      el.dataset.listening = '1';
+    }
+  });
+  root.querySelectorAll('.selstatus,.selmes').forEach(el=>{
+    if (!el.dataset.listening){
+      el.addEventListener('change', scheduleAutosave);
+      el.dataset.listening = '1';
+    }
+  });
+}
+
+function collectData(){
+  const data = {};
+  document.querySelectorAll('[data-key]').forEach(el=>{
+    data['k_'+el.dataset.key] = el.textContent;
+  });
+  document.querySelectorAll('tbody[data-ae]').forEach(tb=>{
+    const rows = [];
+    tb.querySelectorAll('tr').forEach(tr=>{
+      const cells = tr.querySelectorAll('td');
+      rows.push({
+        empresa: cells[0]?.textContent||'',
+        produto: cells[1]?.textContent||'',
+        tipo: cells[2]?.innerHTML||'',
+        valor: cells[3]?.textContent||'0',
+        status: tr.querySelector('.selstatus')?.value||'',
+        mes: tr.querySelector('.selmes')?.value||'',
+        score: tr.querySelector('.score')?.textContent||'',
+        destacado: tr.classList.contains('tdest')
+      });
+    });
+    data['tbody_'+tb.dataset.ae] = rows;
+  });
+  return data;
+}
+
+function setSaveStatus(txt, cls){
+  const el = document.getElementById('saveStatus');
+  if (!el) return;
+  el.textContent = txt;
+  el.className = 'savest '+(cls||'');
+}
+
+let autosaveTimer = null;
+function scheduleAutosave(){
+  setSaveStatus('● editando…','editing');
+  clearTimeout(autosaveTimer);
+  autosaveTimer = setTimeout(autosave, 700);
+}
+
+async function autosave(){
+  try {
+    await window.storage.set('ntics_plano_2026_v3', JSON.stringify(collectData()), false);
+    const t = new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    setSaveStatus('✓ salvo '+t,'ok');
+  } catch(e){
+    setSaveStatus('⚠ não salvo — use Exportar','warn');
+  }
+}
+
+async function saveData(){
+  try {
+    await window.storage.set('ntics_plano_2026_v3', JSON.stringify(collectData()), false);
+    const t = new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    setSaveStatus('✓ salvo '+t,'ok');
+  } catch(e){
+    setSaveStatus('⚠ navegador bloqueou — exportando arquivo','warn');
+    exportHTML();
+  }
+}
+
+async function loadData(){
+  try {
+    const result = await window.storage.get('ntics_plano_2026_v3', false);
+    if (!result) return;
+    const data = JSON.parse(result.value);
+    Object.keys(data).forEach(key=>{
+      if (key.startsWith('k_')){
+        const el = document.querySelector(`[data-key="${key.slice(2)}"]`);
+        if (el) el.textContent = data[key];
+      } else if (key.startsWith('tbody_')){
+        const tb = document.querySelector(`tbody[data-ae="${key.slice(6)}"]`);
+        if (tb && Array.isArray(data[key])){
+          const hasUpsell = tb.querySelector('.plus20') !== null;
+          tb.innerHTML = '';
+          data[key].forEach(r=>{
+            const tr = document.createElement('tr');
+            if (r.destacado) tr.classList.add('tdest');
+            const upCell = hasUpsell ? '<td class="r up plus20"></td>' : '';
+            const mkSel = (cls, opts, val) => {
+              let o = '<option value=""></option>';
+              opts.forEach(x=>{ o += `<option${x===val?' selected':''}>${x}</option>`; });
+              return `<select class="${cls}">${o}</select>`;
+            };
+            const statusSel = mkSel('selstatus', ['Reunião agendada','Planejado','Negativa'], r.status||'');
+            const mesSel = mkSel('selmes', ['Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'], r.mes||'');
+            tr.innerHTML = `
+              <td contenteditable="true" class="nm">${r.empresa}</td>
+              <td contenteditable="true" class="pr">${r.produto}</td>
+              <td>${r.tipo}</td>
+              <td contenteditable="true" class="r val">${r.valor}</td>
+              ${upCell}
+              <td class="stt">${statusSel}</td><td class="mes">${mesSel}</td><td contenteditable="true" class="sc score" data-placeholder="–">${r.score||''}</td><td><button class="del" onclick="delRow(this)">×</button></td>`;
+            tb.appendChild(tr);
+          });
+        }
+      }
+    });
+    attachListeners();
+    recalc();
+  } catch(e){}
+}
+
+function resetData(){
+  if (confirm('Restaurar valores iniciais? As alterações não salvas serão perdidas.')){
+    try { window.storage.delete('ntics_plano_2026_v3', false); } catch(e){}
+    location.reload();
+  }
+}
+
+function exportHTML(){
+  // Clona o documento e fixa o estado atual (edições, selects, scores) direto no HTML.
+  const clone = document.documentElement.cloneNode(true);
+
+  // 1) Selects: marcar selected na opção escolhida (espelhar do documento vivo)
+  const liveSel = document.querySelectorAll('select');
+  const cloneSel = clone.querySelectorAll('select');
+  cloneSel.forEach((sel,i)=>{
+    const val = liveSel[i] ? liveSel[i].value : '';
+    sel.querySelectorAll('option').forEach(op=>{
+      if (op.value===val || op.textContent===val){ op.setAttribute('selected','selected'); }
+      else { op.removeAttribute('selected'); }
+    });
+  });
+
+  // 2) contenteditable já vão com o texto atual pois clonamos o DOM vivo.
+  //    Removemos o indicador de status e o timer do clone (estado de runtime).
+  const st = clone.querySelector('#saveStatus'); if (st) st.textContent='';
+
+  // 3) Montar arquivo
+  const htmlStr = '<!DOCTYPE html>\n<html lang="pt-BR">' + clone.innerHTML + '</html>';
+  const blob = new Blob([htmlStr], {type:'text/html;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const d = new Date();
+  const stamp = d.getFullYear()+('0'+(d.getMonth()+1)).slice(-2)+('0'+d.getDate()).slice(-2);
+  a.href = url;
+  a.download = 'plano-de-vendas-editavel-'+stamp+'.html';
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+  setSaveStatus('✓ arquivo exportado','ok');
+}
+
+window.addEventListener('beforeunload', ()=>{ try{ autosave(); }catch(e){} });
+
+attachListeners();
+loadData();
+recalc();
+autosave();
+</script>
+</body>
+</html>
